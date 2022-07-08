@@ -1,0 +1,91 @@
+{
+  "format_version": 2,
+  "global_rounds": 1,
+  "min_clients": 2,
+  "server": {
+    "heart_beat_timeout": 600
+  },
+  "task_data_filters": [],
+  "task_result_filters": [],
+  "components": [
+    {
+      "id": "persistor",
+      "path": "nvflare.app_common.pt.pt_file_model_persistor.PTFileModelPersistor",
+      "args": {
+        "model": {
+          "path": "simple_network.SimpleNetwork"
+        }
+      }
+    },
+    {
+      "id": "shareable_generator",
+      "path": "nvflare.app_common.shareablegenerators.full_model_shareable_generator.FullModelShareableGenerator",
+      "args": {}
+    },
+    {
+      "id": "aggregator",
+      "path": "nvflare.app_common.aggregators.intime_accumulate_model_aggregator.InTimeAccumulateWeightedAggregator",
+      "args": {
+        "expected_data_kind": "WEIGHTS"
+      }
+    },
+    {
+      "id": "model_locator",
+      "path": "pt_model_locator.PTModelLocator",
+      "args": {}
+    },
+    {
+      "id": "json_generator",
+      "path": "validation_json_generator.ValidationJsonGenerator",
+      "args": {}
+    },
+    {
+      "id": "flip_server_event_handler",
+      "path": "flip_server_event_handler.ServerEventHandler",
+      "args": {
+        "model_id": "{model_id}"
+      }
+    },
+    {
+      "id": "persist_and_cleanup",
+      "path": "persist_and_cleanup.PersistToS3AndCleanup",
+      "args": {
+        "model_id": "{model_id}",
+        "persistor_id": "persistor"
+      }
+    }
+  ],
+  "workflows": [
+    {
+      "id": "pre_training",
+      "path": "pre_training.DataRetrieval",
+      "args": {
+        "model_id": "{model_id}",
+        "retrieval_task_name": "retrieve_images"
+      }
+    },
+    {
+      "id": "scatter_and_gather",
+      "path": "scatter_and_gather.ScatterAndGather",
+      "args": {
+        "min_clients": "{min_clients}",
+        "num_rounds": "{global_rounds}",
+        "start_round": 0,
+        "wait_time_after_min_received": 10,
+        "aggregator_id": "aggregator",
+        "persistor_id": "persistor",
+        "shareable_generator_id": "shareable_generator",
+        "train_task_name": "train",
+        "train_timeout": 0,
+        "model_id": "{model_id}"
+      }
+    },
+    {
+      "id": "cross_site_validate",
+      "name": "CrossSiteModelEval",
+      "args": {
+        "model_locator_id": "model_locator"
+      }
+    }
+  ]
+}

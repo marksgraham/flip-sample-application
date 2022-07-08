@@ -1,0 +1,100 @@
+{
+  "format_version": 2,
+  "lr": 0.01,
+  "executors": [
+    {
+      "tasks": [
+        "retrieve_images"
+      ],
+      "executor": {
+        "path": "data_retrieval.DataRetrieval",
+        "args": {
+          "project_id": "{project_id}",
+          "net_id": "net-01"
+        }
+      }
+    },
+    {
+      "tasks": [
+        "train",
+        "submit_model"
+      ],
+      "executor": {
+        "path": "trainer.FLIP_TRAINER",
+        "args": {
+          "lr": "{lr}",
+          "epochs": "{global_rounds}",
+          "project_id": "{project_id}",
+          "query": "{query}"
+        }
+      }
+    },
+    {
+      "tasks": [
+        "validate"
+      ],
+      "executor": {
+        "path": "validator.FLIP_VALIDATOR",
+        "args": {}
+      }
+    }
+  ],
+  "task_result_filters": [
+    {
+      "tasks": [
+        "train"
+      ],
+      "filters": [
+        {
+          "path": "nvflare.app_common.filters.exclude_vars.ExcludeVars",
+          "args": {}
+        },
+        {
+          "path": "nvflare.app_common.filters.percentile_privacy.PercentilePrivacy",
+          "args": {}
+        },
+        {
+          "path": "nvflare.app_common.filters.svt_privacy.SVTPrivacy",
+          "args": {}
+        }
+      ]
+    }
+  ],
+  "task_data_filters": [
+    {
+      "tasks": [
+        "train"
+      ],
+      "filters": [
+        {
+          "path": "nvflare.app_common.filters.exclude_vars.ExcludeVars",
+          "args": {}
+        },
+        {
+          "path": "nvflare.app_common.filters.percentile_privacy.PercentilePrivacy",
+          "args": {}
+        },
+        {
+          "path": "nvflare.app_common.filters.svt_privacy.SVTPrivacy",
+          "args": {}
+        }
+      ]
+    }
+  ],
+  "components": [
+    {
+      "id": "flip_client_event_handler",
+      "path": "flip_client_event_handler.ClientEventHandler",
+      "args": {
+        "cleanup_id": "cleanup_images"
+      }
+    },
+    {
+      "id": "cleanup_images",
+      "path": "cleanup.CleanupImages",
+      "args": {
+        "net_id": "net-01"
+      }
+    }
+  ]
+}
