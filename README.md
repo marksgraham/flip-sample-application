@@ -34,7 +34,7 @@ Ensure you also copy this (`./flip-app`) directory into the NVFlare examples fol
 
 ```bash
 mkdir poc/admin/transfer/<APPLICATION_NAME>
-cp -rf src/* poc/admin/transfer/<APPLICATION_NAME>
+cp -rf flip-app/* poc/admin/transfer/<APPLICATION_NAME>
 ```
 
 ### 3. Run the experiment
