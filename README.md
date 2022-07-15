@@ -19,7 +19,7 @@ These two files are where you should add your own application code. The `./sampl
 
 ### 1. Install NVIDIA FLARE
 
-Follow the [Installation](https://nvidia.github.io/NVFlare/installation.html) instructions.
+Follow the [Installation](https://nvflare.readthedocs.io/en/2.0/installation.html) instructions.
 Install additional requirements:
 
 ```bash
