@@ -29,11 +29,11 @@ from utils.utils import Utils
 
 class DataRetrieval(Controller):
     def __init__(
-            self,
-            model_id: str,
-            min_clients: int = FlipConstants.MIN_CLIENTS,
-            retrieval_task_name: str = FlipConstants.RETRIEVE_IMAGES,
-            flip: FLIP = FLIP()
+        self,
+        model_id: str,
+        min_clients: int = FlipConstants.MIN_CLIENTS,
+        retrieval_task_name: str = FlipConstants.RETRIEVE_IMAGES,
+        flip: FLIP = FLIP(),
     ):
         """The controller that is executed pre-training and is a part of the FLIP training model
 
@@ -63,9 +63,10 @@ class DataRetrieval(Controller):
                 raise ValueError(f"The model ID: {self.model_id} is not a valid UUID")
 
             if self.min_clients < FlipConstants.MIN_CLIENTS:
-                raise ValueError(f"Invalid number of minimum clients specified. {self.min_clients} is less than "
-                                 f"{FlipConstants.MIN_CLIENTS} which is the minimum number for a successful aggregation"
-                                 )
+                raise ValueError(
+                    f"Invalid number of minimum clients specified. {self.min_clients} is less than "
+                    f"{FlipConstants.MIN_CLIENTS} which is the minimum number for a successful aggregation"
+                )
         except ValueError as e:
             self.flip.update_status(self.model_id, ModelStatus.ERROR)
             raise ValueError(e)
@@ -98,29 +99,31 @@ class DataRetrieval(Controller):
         self.cancel_all_tasks()
 
     def process_result_of_unknown_task(
-            self, client: Client, task_name, client_task_id, result: Shareable, fl_ctx: FLContext
+        self,
+        client: Client,
+        task_name,
+        client_task_id,
+        result: Shareable,
+        fl_ctx: FLContext,
     ) -> None:
         self.log_error(fl_ctx, "Ignoring result from unknown task.")
 
     def retrieve_images(self, fl_ctx: FLContext):
         try:
             self.log_info(
-                fl_ctx, "Attempting to start the step to retrieve and download the images required for training..."
+                fl_ctx,
+                "Attempting to start the step to retrieve and download the images required for training...",
             )
             shareable = Shareable()
 
             retrieval_task = Task(
-                name=self.retrieval_task_name,
-                data=shareable,
-                props={}
+                name=self.retrieval_task_name, data=shareable, props={}
             )
 
             self.fire_event(FlipEvents.DATA_RETRIEVAL_STARTED, fl_ctx)
 
             self.broadcast_and_wait(
-                task=retrieval_task,
-                min_responses=self.min_clients,
-                fl_ctx=fl_ctx
+                task=retrieval_task, min_responses=self.min_clients, fl_ctx=fl_ctx
             )
 
             self.log_info(fl_ctx, "Retrieval of images step successful")
@@ -134,7 +137,10 @@ class DataRetrieval(Controller):
     def _check_abort_signal(self, fl_ctx, abort_signal: Signal):
         if abort_signal.triggered:
             self._phase = AppConstants.PHASE_FINISHED
-            self.log_info(fl_ctx, f"Abort signal received. Exiting at round {self._current_round}.")
+            self.log_info(
+                fl_ctx,
+                f"Abort signal received. Exiting at round {self._current_round}.",
+            )
             self.fire_event(FlipEvents.ABORTED, fl_ctx)
             return True
         return False

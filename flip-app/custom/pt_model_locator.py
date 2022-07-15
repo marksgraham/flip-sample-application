@@ -27,7 +27,6 @@ from simple_network import SimpleNetwork
 
 
 class PTModelLocator(ModelLocator):
-
     def __init__(self, exclude_vars=None, model=None):
         super(PTModelLocator, self).__init__()
 
@@ -40,7 +39,11 @@ class PTModelLocator(ModelLocator):
     def locate_model(self, model_name, fl_ctx: FLContext) -> Union[DXO, None]:
         if model_name == PTConstants.PTServerName:
             try:
-                server_run_dir = fl_ctx.get_engine().get_workspace().get_app_dir(fl_ctx.get_run_number())
+                server_run_dir = (
+                    fl_ctx.get_engine()
+                    .get_workspace()
+                    .get_app_dir(fl_ctx.get_run_number())
+                )
                 model_path = os.path.join(server_run_dir, PTConstants.PTFileModelName)
                 if not os.path.exists(model_path):
                     return None
@@ -56,14 +59,22 @@ class PTModelLocator(ModelLocator):
                     default_train_conf = None
 
                 # Use persistence manager to get learnable
-                persistence_manager = PTModelPersistenceFormatManager(data, default_train_conf=default_train_conf)
+                persistence_manager = PTModelPersistenceFormatManager(
+                    data, default_train_conf=default_train_conf
+                )
                 ml = persistence_manager.to_model_learnable(exclude_vars=None)
 
                 # Create dxo and return
                 return model_learnable_to_dxo(ml)
             except:
-                self.log_error(fl_ctx, "Error in retrieving {model_name}.", fire_event=False)
+                self.log_error(
+                    fl_ctx, "Error in retrieving {model_name}.", fire_event=False
+                )
                 return None
         else:
-            self.log_error(fl_ctx, f"PTModelLocator doesn't recognize name: {model_name}", fire_event=False)
+            self.log_error(
+                fl_ctx,
+                f"PTModelLocator doesn't recognize name: {model_name}",
+                fire_event=False,
+            )
             return None

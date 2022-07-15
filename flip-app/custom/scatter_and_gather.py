@@ -46,7 +46,7 @@ class ScatterAndGather(Controller):
         shareable_generator_id=AppConstants.DEFAULT_SHAREABLE_GENERATOR_ID,
         train_task_name=AppConstants.TASK_TRAIN,
         train_timeout: int = 0,
-        ignore_result_error: bool = True
+        ignore_result_error: bool = True,
     ):
         """The controller for FederatedAveraging Workflow.
 
@@ -82,25 +82,51 @@ class ScatterAndGather(Controller):
         # Check arguments
         try:
             if not isinstance(min_clients, int):
-                raise TypeError("min_clients must be int but got {}".format(type(min_clients)))
+                raise TypeError(
+                    "min_clients must be int but got {}".format(type(min_clients))
+                )
             if not isinstance(num_rounds, int):
-                raise TypeError("num_rounds must be int but got {}".format(type(num_rounds)))
+                raise TypeError(
+                    "num_rounds must be int but got {}".format(type(num_rounds))
+                )
             if not isinstance(start_round, int):
-                raise TypeError("start_round must be int but got {}".format(type(start_round)))
+                raise TypeError(
+                    "start_round must be int but got {}".format(type(start_round))
+                )
             if not isinstance(wait_time_after_min_received, int):
                 raise TypeError(
-                    "wait_time_after_min_received must be int but got {}".format(type(wait_time_after_min_received))
+                    "wait_time_after_min_received must be int but got {}".format(
+                        type(wait_time_after_min_received)
+                    )
                 )
             if not isinstance(train_timeout, int):
-                raise TypeError("train_timeout must be int but got {}".format(type(train_timeout)))
+                raise TypeError(
+                    "train_timeout must be int but got {}".format(type(train_timeout))
+                )
             if not isinstance(aggregator_id, str):
-                raise TypeError("aggregator_id must be a string but got {}".format(type(aggregator_id)))
+                raise TypeError(
+                    "aggregator_id must be a string but got {}".format(
+                        type(aggregator_id)
+                    )
+                )
             if not isinstance(persistor_id, str):
-                raise TypeError("persistor_id must be a string but got {}".format(type(persistor_id)))
+                raise TypeError(
+                    "persistor_id must be a string but got {}".format(
+                        type(persistor_id)
+                    )
+                )
             if not isinstance(shareable_generator_id, str):
-                raise TypeError("shareable_generator_id must be a string but got {}".format(type(shareable_generator_id)))
+                raise TypeError(
+                    "shareable_generator_id must be a string but got {}".format(
+                        type(shareable_generator_id)
+                    )
+                )
             if not isinstance(train_task_name, str):
-                raise TypeError("train_task_name must be a string but got {}".format(type(train_task_name)))
+                raise TypeError(
+                    "train_task_name must be a string but got {}".format(
+                        type(train_task_name)
+                    )
+                )
             if min_clients <= 0:
                 raise ValueError("min_clients must be greater than 0.")
             if num_rounds < 0:
@@ -108,7 +134,9 @@ class ScatterAndGather(Controller):
             if start_round < 0:
                 raise ValueError("start_round must be greater than or equal to 0.")
             if wait_time_after_min_received < 0:
-                raise ValueError("wait_time_after_min_received must be greater than or equal to 0.")
+                raise ValueError(
+                    "wait_time_after_min_received must be greater than or equal to 0."
+                )
             if not Utils.is_valid_uuid(model_id):
                 raise ValueError(f"The model ID: {model_id} is not a valid UUID")
         except Exception as e:
@@ -116,7 +144,7 @@ class ScatterAndGather(Controller):
             raise Exception(e)
 
         self.model_id = model_id
-        
+
         self.aggregator_id = aggregator_id
         self.persistor_id = persistor_id
         self.shareable_generator_id = shareable_generator_id
@@ -171,10 +199,16 @@ class ScatterAndGather(Controller):
             return
 
         # initialize global model
-        fl_ctx.set_prop(AppConstants.START_ROUND, self._start_round, private=True, sticky=True)
-        fl_ctx.set_prop(AppConstants.NUM_ROUNDS, self._num_rounds, private=True, sticky=False)
+        fl_ctx.set_prop(
+            AppConstants.START_ROUND, self._start_round, private=True, sticky=True
+        )
+        fl_ctx.set_prop(
+            AppConstants.NUM_ROUNDS, self._num_rounds, private=True, sticky=False
+        )
         self._global_weights = self.persistor.load(fl_ctx)
-        fl_ctx.set_prop(AppConstants.GLOBAL_MODEL, self._global_weights, private=True, sticky=True)
+        fl_ctx.set_prop(
+            AppConstants.GLOBAL_MODEL, self._global_weights, private=True, sticky=True
+        )
         self.fire_event(AppEventType.INITIAL_MODEL_LOADED, fl_ctx)
 
     def control_flow(self, abort_signal: Signal, fl_ctx: FLContext) -> None:
@@ -183,23 +217,43 @@ class ScatterAndGather(Controller):
             self._phase = AppConstants.PHASE_TRAIN
 
             fl_ctx.set_prop(AppConstants.PHASE, self._phase, private=True, sticky=False)
-            fl_ctx.set_prop(AppConstants.NUM_ROUNDS, self._num_rounds, private=True, sticky=False)
+            fl_ctx.set_prop(
+                AppConstants.NUM_ROUNDS, self._num_rounds, private=True, sticky=False
+            )
             self.fire_event(AppEventType.TRAINING_STARTED, fl_ctx)
 
-            for self._current_round in range(self._start_round, self._start_round + self._num_rounds):
+            for self._current_round in range(
+                self._start_round, self._start_round + self._num_rounds
+            ):
                 if self._check_abort_signal(fl_ctx, abort_signal):
                     return
 
                 self.log_info(fl_ctx, f"Round {self._current_round} started.")
-                fl_ctx.set_prop(AppConstants.GLOBAL_MODEL, self._global_weights, private=True, sticky=True)
-                fl_ctx.set_prop(AppConstants.CURRENT_ROUND, self._current_round, private=True, sticky=False)
+                fl_ctx.set_prop(
+                    AppConstants.GLOBAL_MODEL,
+                    self._global_weights,
+                    private=True,
+                    sticky=True,
+                )
+                fl_ctx.set_prop(
+                    AppConstants.CURRENT_ROUND,
+                    self._current_round,
+                    private=True,
+                    sticky=False,
+                )
                 self.fire_event(AppEventType.ROUND_STARTED, fl_ctx)
 
                 # Create train_task
-                data_shareable: Shareable = self.shareable_gen.learnable_to_shareable(self._global_weights, fl_ctx)
-                data_shareable.set_header(AppConstants.CURRENT_ROUND, self._current_round)
+                data_shareable: Shareable = self.shareable_gen.learnable_to_shareable(
+                    self._global_weights, fl_ctx
+                )
+                data_shareable.set_header(
+                    AppConstants.CURRENT_ROUND, self._current_round
+                )
                 data_shareable.set_header(AppConstants.NUM_ROUNDS, self._num_rounds)
-                data_shareable.add_cookie(AppConstants.CONTRIBUTION_ROUND, self._current_round)
+                data_shareable.add_cookie(
+                    AppConstants.CONTRIBUTION_ROUND, self._current_round
+                )
 
                 train_task = Task(
                     name=self.train_task_name,
@@ -223,15 +277,27 @@ class ScatterAndGather(Controller):
 
                 self.fire_event(AppEventType.BEFORE_AGGREGATION, fl_ctx)
                 aggr_result = self.aggregator.aggregate(fl_ctx)
-                fl_ctx.set_prop(AppConstants.AGGREGATION_RESULT, aggr_result, private=True, sticky=False)
+                fl_ctx.set_prop(
+                    AppConstants.AGGREGATION_RESULT,
+                    aggr_result,
+                    private=True,
+                    sticky=False,
+                )
                 self.fire_event(AppEventType.AFTER_AGGREGATION, fl_ctx)
 
                 if self._check_abort_signal(fl_ctx, abort_signal):
                     return
 
                 self.fire_event(AppEventType.BEFORE_SHAREABLE_TO_LEARNABLE, fl_ctx)
-                self._global_weights = self.shareable_gen.shareable_to_learnable(aggr_result, fl_ctx)
-                fl_ctx.set_prop(AppConstants.GLOBAL_MODEL, self._global_weights, private=True, sticky=True)
+                self._global_weights = self.shareable_gen.shareable_to_learnable(
+                    aggr_result, fl_ctx
+                )
+                fl_ctx.set_prop(
+                    AppConstants.GLOBAL_MODEL,
+                    self._global_weights,
+                    private=True,
+                    sticky=True,
+                )
                 fl_ctx.sync_sticky()
                 self.fire_event(AppEventType.AFTER_SHAREABLE_TO_LEARNABLE, fl_ctx)
 
@@ -265,15 +331,30 @@ class ScatterAndGather(Controller):
             if collector:
                 if not isinstance(collector, GroupInfoCollector):
                     self.fire_event(EventType.FATAL_SYSTEM_ERROR)
-                    raise TypeError("collector must be GroupInfoCollector but got {}".format(type(collector)))
+                    raise TypeError(
+                        "collector must be GroupInfoCollector but got {}".format(
+                            type(collector)
+                        )
+                    )
 
                 collector.add_info(
                     group_name=self._name,
-                    info={"phase": self._phase, "current_round": self._current_round, "num_rounds": self._num_rounds},
+                    info={
+                        "phase": self._phase,
+                        "current_round": self._current_round,
+                        "num_rounds": self._num_rounds,
+                    },
                 )
 
-    def _prepare_train_task_data(self, client_task: ClientTask, fl_ctx: FLContext) -> None:
-        fl_ctx.set_prop(AppConstants.TRAIN_SHAREABLE, client_task.task.data, private=True, sticky=False)
+    def _prepare_train_task_data(
+        self, client_task: ClientTask, fl_ctx: FLContext
+    ) -> None:
+        fl_ctx.set_prop(
+            AppConstants.TRAIN_SHAREABLE,
+            client_task.task.data,
+            private=True,
+            sticky=False,
+        )
         self.fire_event(AppEventType.BEFORE_TRAIN_TASK, fl_ctx)
 
     def _process_train_result(self, client_task: ClientTask, fl_ctx: FLContext) -> None:
@@ -286,15 +367,29 @@ class ScatterAndGather(Controller):
         client_task.result = None
 
     def process_result_of_unknown_task(
-        self, client: Client, task_name, client_task_id, result: Shareable, fl_ctx: FLContext
+        self,
+        client: Client,
+        task_name,
+        client_task_id,
+        result: Shareable,
+        fl_ctx: FLContext,
     ) -> None:
-        if self._phase == AppConstants.PHASE_TRAIN and task_name == self.train_task_name:
-            self._accept_train_result(client_name=client.name, result=result, fl_ctx=fl_ctx)
-            self.log_info(fl_ctx, f"Result of unknown task {task_name} sent to aggregator.")
+        if (
+            self._phase == AppConstants.PHASE_TRAIN
+            and task_name == self.train_task_name
+        ):
+            self._accept_train_result(
+                client_name=client.name, result=result, fl_ctx=fl_ctx
+            )
+            self.log_info(
+                fl_ctx, f"Result of unknown task {task_name} sent to aggregator."
+            )
         else:
             self.log_error(fl_ctx, "Ignoring result from unknown task.")
 
-    def _accept_train_result(self, client_name: str, result: Shareable, fl_ctx: FLContext) -> bool:
+    def _accept_train_result(
+        self, client_name: str, result: Shareable, fl_ctx: FLContext
+    ) -> bool:
 
         rc = result.get_return_code()
         contribution_round = result.get_cookie(AppConstants.CONTRIBUTION_ROUND)
@@ -303,15 +398,22 @@ class ScatterAndGather(Controller):
         # Raise errors if bad peer context or execution exception.
         if rc and rc != ReturnCode.OK:
             if self.ignore_result_error:
-                self.log_error(fl_ctx, f"Ignore the client train result. Train result error code: {rc}")
+                self.log_error(
+                    fl_ctx,
+                    f"Ignore the client train result. Train result error code: {rc}",
+                )
                 return False
             else:
                 if rc in [ReturnCode.MISSING_PEER_CONTEXT, ReturnCode.BAD_PEER_CONTEXT]:
-                    self.system_panic("Peer context is bad or missing. ScatterAndGather exiting.", fl_ctx=fl_ctx)
+                    self.system_panic(
+                        "Peer context is bad or missing. ScatterAndGather exiting.",
+                        fl_ctx=fl_ctx,
+                    )
                     return False
                 elif rc in [ReturnCode.EXECUTION_EXCEPTION, ReturnCode.TASK_UNKNOWN]:
                     self.system_panic(
-                        "Execution Exception in client training. ScatterAndGather exiting.", fl_ctx=fl_ctx
+                        "Execution Exception in client training. ScatterAndGather exiting.",
+                        fl_ctx=fl_ctx,
                     )
                     return False
                 elif rc in [
@@ -319,19 +421,35 @@ class ScatterAndGather(Controller):
                     ReturnCode.TASK_DATA_FILTER_ERROR,
                     ReturnCode.TASK_RESULT_FILTER_ERROR,
                 ]:
-                    self.system_panic("Execution result is not a shareable. ScatterAndGather exiting.", fl_ctx=fl_ctx)
+                    self.system_panic(
+                        "Execution result is not a shareable. ScatterAndGather exiting.",
+                        fl_ctx=fl_ctx,
+                    )
                     return False
 
-        fl_ctx.set_prop(AppConstants.CURRENT_ROUND, self._current_round, private=True, sticky=False)
-        fl_ctx.set_prop(AppConstants.TRAINING_RESULT, result, private=True, sticky=False)
-        fl_ctx.set_prop(AppConstants.CONTRIBUTION_ROUND, contribution_round, private=True, sticky=False)
+        fl_ctx.set_prop(
+            AppConstants.CURRENT_ROUND, self._current_round, private=True, sticky=False
+        )
+        fl_ctx.set_prop(
+            AppConstants.TRAINING_RESULT, result, private=True, sticky=False
+        )
+        fl_ctx.set_prop(
+            AppConstants.CONTRIBUTION_ROUND,
+            contribution_round,
+            private=True,
+            sticky=False,
+        )
         self.fire_event(AppEventType.BEFORE_CONTRIBUTION_ACCEPT, fl_ctx)
 
         accepted = self.aggregator.accept(result, fl_ctx)
         accepted_msg = "ACCEPTED" if accepted else "REJECTED"
-        self.log_info(fl_ctx, f"Contribution from {client_name} {accepted_msg} by the aggregator.")
+        self.log_info(
+            fl_ctx, f"Contribution from {client_name} {accepted_msg} by the aggregator."
+        )
 
-        fl_ctx.set_prop(AppConstants.AGGREGATION_ACCEPTED, accepted, private=True, sticky=False)
+        fl_ctx.set_prop(
+            AppConstants.AGGREGATION_ACCEPTED, accepted, private=True, sticky=False
+        )
         self.fire_event(AppEventType.AFTER_CONTRIBUTION_ACCEPT, fl_ctx)
 
         return accepted
@@ -339,7 +457,10 @@ class ScatterAndGather(Controller):
     def _check_abort_signal(self, fl_ctx, abort_signal: Signal):
         if abort_signal.triggered:
             self._phase = AppConstants.PHASE_FINISHED
-            self.log_info(fl_ctx, f"Abort signal received. Exiting at round {self._current_round}.")
+            self.log_info(
+                fl_ctx,
+                f"Abort signal received. Exiting at round {self._current_round}.",
+            )
             self.fire_event(FlipEvents.ABORTED, fl_ctx)
             return True
         return False

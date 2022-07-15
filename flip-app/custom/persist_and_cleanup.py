@@ -39,10 +39,10 @@ cwd = str(Path.cwd())  # Server dir
 
 class PersistToS3AndCleanup(FLComponent):
     def __init__(
-            self,
-            model_id: str,
-            persistor_id: str = AppConstants.DEFAULT_PERSISTOR_ID,
-            flip: FLIP = FLIP()
+        self,
+        model_id: str,
+        persistor_id: str = AppConstants.DEFAULT_PERSISTOR_ID,
+        flip: FLIP = FLIP(),
     ):
         """The component that is executed post training and is a part of the FLIP training model
 
@@ -65,8 +65,10 @@ class PersistToS3AndCleanup(FLComponent):
         self.persistor_id = persistor_id
         self.model_persistor = None
         self.model_inventory: dict = {}
-        self.model_dir: str = f'{cwd}/run_1'
-        self.bucket_name: str = f"flip-uploaded-federated-data-bucket-{os.environ.get('ENVIRONMENT')}"
+        self.model_dir: str = f"{cwd}/run_1"
+        self.bucket_name: str = (
+            f"flip-uploaded-federated-data-bucket-{os.environ.get('ENVIRONMENT')}"
+        )
 
         self.flip = flip
 
@@ -79,11 +81,17 @@ class PersistToS3AndCleanup(FLComponent):
             self.log_info(fl_ctx, "Initializing PersistToS3AndCleanup")
             engine = fl_ctx.get_engine()
             if not engine:
-                self.system_panic("Engine not found. PersistToS3AndCleanup exiting.", fl_ctx)
+                self.system_panic(
+                    "Engine not found. PersistToS3AndCleanup exiting.", fl_ctx
+                )
                 return
 
-            self.model_persistor: PTFileModelPersistor = engine.get_component(self.persistor_id)
-            if self.model_persistor is None or not isinstance(self.model_persistor, PTFileModelPersistor):
+            self.model_persistor: PTFileModelPersistor = engine.get_component(
+                self.persistor_id
+            )
+            if self.model_persistor is None or not isinstance(
+                self.model_persistor, PTFileModelPersistor
+            ):
                 self.system_panic(
                     f"'persistor_id' component must be PTFileModelPersistor. But got: {type(self.model_persistor)}",
                     fl_ctx,
@@ -93,17 +101,26 @@ class PersistToS3AndCleanup(FLComponent):
             self.log_info(fl_ctx, "Beginning PersistToS3AndCleanup")
             self.model_inventory = self.model_persistor.get_model_inventory(fl_ctx)
 
-            if (self.model_inventory.get(PTConstants.PTFileModelName) is not None) and \
-                    (PTConstants.PTFileModelName in self.model_inventory):
+            if (self.model_inventory.get(PTConstants.PTFileModelName) is not None) and (
+                PTConstants.PTFileModelName in self.model_inventory
+            ):
 
-                self.model_dir = \
+                self.model_dir = (
                     self.model_inventory[PTConstants.PTFileModelName].location.split(
-                        f'run_1')[0] + f"run_1"
+                        f"run_1"
+                    )[0]
+                    + f"run_1"
+                )
 
-                self.log_info(fl_ctx, "Location of the final aggregated model obtained.")
+                self.log_info(
+                    fl_ctx, "Location of the final aggregated model obtained."
+                )
             else:
-                self.log_warning(fl_ctx, "Unable to retrieve the details of the aggregated model. "
-                                         "Will attempt to zip everything within the final run using a manual path.")
+                self.log_warning(
+                    fl_ctx,
+                    "Unable to retrieve the details of the aggregated model. "
+                    "Will attempt to zip everything within the final run using a manual path.",
+                )
 
             self.fire_event(FlipEvents.RESULTS_UPLOAD_STARTED, fl_ctx)
 
@@ -120,18 +137,19 @@ class PersistToS3AndCleanup(FLComponent):
             error_msg = f"Exception in PersistToS3AndCleanup control_flow: {e}"
             self.log_exception(fl_ctx, error_msg)
 
-    def upload_results_to_s3_bucket(
-            self,
-            source_path: str,
-            fl_ctx: FLContext
-    ):
+    def upload_results_to_s3_bucket(self, source_path: str, fl_ctx: FLContext):
         try:
-            self.log_info(fl_ctx, "Attempting to upload the final aggregated model to the s3 bucket...")
+            self.log_info(
+                fl_ctx,
+                "Attempting to upload the final aggregated model to the s3 bucket...",
+            )
 
             run_dir = os.path.join(cwd, "run_1")
             app_server_path = os.path.join(run_dir, "app_server")
 
-            fl_global_model_filepath = os.path.join(app_server_path, "FL_global_model.pt")
+            fl_global_model_filepath = os.path.join(
+                app_server_path, "FL_global_model.pt"
+            )
             trainer_path = os.path.join(app_server_path, "custom", "trainer.py")
             validator_path = os.path.join(app_server_path, "custom", "validator.py")
 
@@ -150,13 +168,15 @@ class PersistToS3AndCleanup(FLComponent):
             self.log_info(fl_ctx, "Zipping the final model and the reports...")
             zip_name = datetime.now().strftime("%Y%m%d_%H%M%S")
             zip_path = os.path.join(cwd, "save", zip_name)
-            shutil.make_archive(zip_path, 'zip', os.path.abspath(source_path))
+            shutil.make_archive(zip_path, "zip", os.path.abspath(source_path))
 
             self.log_info(fl_ctx, "Uploading zip file...")
             bucket_zip_path = f"{self.model_id}/{zip_name}"
 
-            s3_client = boto3.client('s3')
-            s3_client.upload_file(zip_path + ".zip", self.bucket_name, bucket_zip_path + ".zip")
+            s3_client = boto3.client("s3")
+            s3_client.upload_file(
+                zip_path + ".zip", self.bucket_name, bucket_zip_path + ".zip"
+            )
 
             self.log_info(fl_ctx, "Upload to the s3 bucket successful")
         except FileNotFoundError as e:
@@ -170,7 +190,10 @@ class PersistToS3AndCleanup(FLComponent):
 
     def cleanup(self, fl_ctx: FLContext):
         try:
-            self.log_info(fl_ctx, "Attempting to delete the zip file containing the final aggregated run on disk...")
+            self.log_info(
+                fl_ctx,
+                "Attempting to delete the zip file containing the final aggregated run on disk...",
+            )
 
             run_dir = os.path.join(cwd, "run_1")
             save_dir = os.path.join(cwd, "save")
@@ -185,8 +208,7 @@ class PersistToS3AndCleanup(FLComponent):
                     elif os.path.isdir(file_path):
                         shutil.rmtree(file_path)
                 except Exception as e:
-                    self.log_error(
-                        f"Failed to delete {file_path}. Reason: {e}")
+                    self.log_error(f"Failed to delete {file_path}. Reason: {e}")
 
             if os.path.isdir(save_dir):
                 shutil.rmtree(save_dir)
@@ -194,6 +216,8 @@ class PersistToS3AndCleanup(FLComponent):
             self.log_info(fl_ctx, "Zip file has been deleted successfully")
 
         except Exception as e:
-            self.log_error(fl_ctx, "Cleanup step to delete the images used for training failed")
+            self.log_error(
+                fl_ctx, "Cleanup step to delete the images used for training failed"
+            )
             self.log_error(fl_ctx, str(e))
             self.fire_event(FlipEvents.CLEANUP_ERROR, fl_ctx)

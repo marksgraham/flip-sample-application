@@ -1,14 +1,3 @@
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
 from flip import FLIP
 
 from nvflare.apis.executor import Executor
@@ -22,7 +11,13 @@ from utils.utils import Utils
 
 
 class DataRetrieval(Executor):
-    def __init__(self, project_id: str, net_id: str, retrieval_task_name: str = FlipConstants.RETRIEVE_IMAGES, flip: FLIP = FLIP()):
+    def __init__(
+        self,
+        project_id: str,
+        net_id: str,
+        retrieval_task_name: str = FlipConstants.RETRIEVE_IMAGES,
+        flip: FLIP = FLIP(),
+    ):
         """DataRetrieval takes place before the training. All the images that will be used as part the training are
         downloaded to a specified and accessible storage space
 
@@ -50,14 +45,22 @@ class DataRetrieval(Executor):
         if not net_id:
             raise ValueError(f"The net ID: {self.net_id} cannot be empty or None")
 
-    def execute(self, task_name: str, shareable: Shareable, fl_ctx: FLContext, abort_signal: Signal) -> Shareable:
+    def execute(
+        self,
+        task_name: str,
+        shareable: Shareable,
+        fl_ctx: FLContext,
+        abort_signal: Signal,
+    ) -> Shareable:
         try:
             if task_name == self.retrieval_task_name:
                 if abort_signal.triggered:
                     return make_reply(ReturnCode.TASK_ABORTED)
 
-                self.log_info(fl_ctx,
-                              f"Images related to the training have been downloaded successfully at path: {str(path)}")
+                self.log_info(
+                    fl_ctx,
+                    f"Images related to the training have been downloaded successfully at path: {str(path)}",
+                )
 
                 if abort_signal.triggered:
                     return make_reply(ReturnCode.TASK_ABORTED)

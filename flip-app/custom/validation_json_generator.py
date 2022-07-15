@@ -25,8 +25,11 @@ from pt_constants import PTConstants
 
 
 class ValidationJsonGenerator(FLComponent):
-
-    def __init__(self, results_dir=AppConstants.CROSS_VAL_DIR, json_file_name=PTConstants.CrossValResultsJsonFilename):
+    def __init__(
+        self,
+        results_dir=AppConstants.CROSS_VAL_DIR,
+        json_file_name=PTConstants.CrossValResultsJsonFilename,
+    ):
         """Handles VALIDATION_RESULT_RECEIVED event and generates a results.json containing accuracy of each
         validated model.
 
@@ -49,11 +52,17 @@ class ValidationJsonGenerator(FLComponent):
             val_results = fl_ctx.get_prop(AppConstants.VALIDATION_RESULT, None)
 
             if not model_owner:
-                self.log_error(fl_ctx, "model_owner unknown. Validation result will not be saved to json",
-                               fire_event=False)
+                self.log_error(
+                    fl_ctx,
+                    "model_owner unknown. Validation result will not be saved to json",
+                    fire_event=False,
+                )
             if not data_client:
-                self.log_error(fl_ctx, "data_client unknown. Validation result will not be saved to json",
-                               fire_event=False)
+                self.log_error(
+                    fl_ctx,
+                    "data_client unknown. Validation result will not be saved to json",
+                    fire_event=False,
+                )
 
             if val_results:
                 try:
@@ -65,18 +74,27 @@ class ValidationJsonGenerator(FLComponent):
                             self._val_results[data_client] = {}
                         self._val_results[data_client][model_owner] = dxo.data
                     else:
-                        self.log_error(fl_ctx, f"Expected dxo of kind METRICS but got {dxo.data_kind} instead.",
-                                       fire_event=False)
+                        self.log_error(
+                            fl_ctx,
+                            f"Expected dxo of kind METRICS but got {dxo.data_kind} instead.",
+                            fire_event=False,
+                        )
                 except:
-                    self.log_exception(fl_ctx, f"Exception in handling validation result.", fire_event=False)
+                    self.log_exception(
+                        fl_ctx,
+                        f"Exception in handling validation result.",
+                        fire_event=False,
+                    )
             else:
                 self.log_error(fl_ctx, "Validation result not found.", fire_event=False)
         elif event_type == EventType.END_RUN:
-            run_dir = fl_ctx.get_engine().get_workspace().get_run_dir(fl_ctx.get_run_number())
+            run_dir = (
+                fl_ctx.get_engine().get_workspace().get_run_dir(fl_ctx.get_run_number())
+            )
             cross_val_res_dir = os.path.join(run_dir, self._results_dir)
             if not os.path.exists(cross_val_res_dir):
                 os.makedirs(cross_val_res_dir)
 
             res_file_path = os.path.join(cross_val_res_dir, self._json_file_name)
-            with open(res_file_path, 'w') as f:
+            with open(res_file_path, "w") as f:
                 json.dump(self._val_results, f)

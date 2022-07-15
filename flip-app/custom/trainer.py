@@ -47,7 +47,7 @@ class FLIP_TRAINER(Executor):
         submit_model_task_name=AppConstants.TASK_SUBMIT_MODEL,
         exclude_vars=None,
         project_id="",
-        query=""
+        query="",
     ):
         """Cifar10 Trainer handles train and submit_model tasks. During train_task, it trains a
         simple network on CIFAR10 dataset. For submit_model task, it sends the locally trained model
@@ -70,8 +70,7 @@ class FLIP_TRAINER(Executor):
 
         # Training setup
         self.model = SimpleNetwork()
-        self.device = torch.device(
-            "cuda:0" if torch.cuda.is_available() else "cpu")
+        self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
         self.model.to(self.device)
         self.loss = nn.CrossEntropyLoss()
         self.optimizer = SGD(self.model.parameters(), lr=lr, momentum=0.9)
@@ -86,15 +85,13 @@ class FLIP_TRAINER(Executor):
         self._train_dataset = CIFAR10(
             root="~/data", transform=transforms, download=True, train=True
         )
-        self._train_loader = DataLoader(
-            self._train_dataset, batch_size=4, shuffle=True)
+        self._train_loader = DataLoader(self._train_dataset, batch_size=4, shuffle=True)
         self._n_iterations = len(self._train_loader)
 
         # Setup the persistence manager to save PT model.
         # The default training configuration is used by persistence manager
         # in case no initial model is found.
-        self._default_train_conf = {
-            "train": {"model": type(self.model).__name__}}
+        self._default_train_conf = {"train": {"model": type(self.model).__name__}}
         self.persistence_manager = PTModelPersistenceFormatManager(
             data=self.model.state_dict(), default_train_conf=self._default_train_conf
         )
@@ -119,8 +116,7 @@ class FLIP_TRAINER(Executor):
                     # The outside function will check it again and decide steps to take.
                     return
 
-                images, labels = batch[0].to(
-                    self.device), batch[1].to(self.device)
+                images, labels = batch[0].to(self.device), batch[1].to(self.device)
                 self.optimizer.zero_grad()
 
                 predictions = self.model(images)
@@ -150,8 +146,7 @@ class FLIP_TRAINER(Executor):
                 try:
                     dxo = from_shareable(shareable)
                 except:
-                    self.log_error(
-                        fl_ctx, "Unable to extract dxo from shareable.")
+                    self.log_error(fl_ctx, "Unable to extract dxo from shareable.")
                     return make_reply(ReturnCode.BAD_TASK_DATA)
 
                 # Ensure data kind is weights.
@@ -163,8 +158,7 @@ class FLIP_TRAINER(Executor):
                     return make_reply(ReturnCode.BAD_TASK_DATA)
 
                 # Convert weights to tensor. Run training
-                torch_weights = {k: torch.as_tensor(
-                    v) for k, v in dxo.data.items()}
+                torch_weights = {k: torch.as_tensor(v) for k, v in dxo.data.items()}
                 self.local_train(fl_ctx, torch_weights, abort_signal)
 
                 # Check the abort_signal after training.
@@ -177,8 +171,7 @@ class FLIP_TRAINER(Executor):
 
                 # Get the new state dict and send as weights
                 new_weights = self.model.state_dict()
-                new_weights = {k: v.cpu().numpy()
-                               for k, v in new_weights.items()}
+                new_weights = {k: v.cpu().numpy() for k, v in new_weights.items()}
 
                 outgoing_dxo = DXO(
                     data_kind=DataKind.WEIGHTS,
