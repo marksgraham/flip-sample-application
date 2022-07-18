@@ -9,7 +9,7 @@ Download or clone this repository and use the `./flip-app` directory as a sample
 
 ## **Development guide**
 
-The `./flip-app` directory contains a replica of a application that can be run on FLIP. Some modules are stubbed with only a return type set. There are two main files that FLIP requires before running any training, `trainer.py` and `validator.py`. Both of these files you will find within `flip-app/custom` and contain a working example application that can be used as a starting point.
+The `./flip-app` directory contains a replica of an application that can be run on FLIP. Some modules are stubbed with only a return type set. There are two main files that FLIP requires before running any training - `trainer.py` and `validator.py`. Both of these files you will find within `flip-app/custom` and contain a working example application that can be used as a starting point.
 
 This example uses [NVIDIA FLARE](https://nvidia.github.io/NVFlare) to train an image classifier using federated averaging ([FedAvg]([FedAvg](https://arxiv.org/abs/1602.05629))) and [PyTorch](https://pytorch.org/) as the deep learning training framework.
 
