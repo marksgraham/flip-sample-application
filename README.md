@@ -20,10 +20,16 @@ These two files are where you should add your own application code. The `./sampl
 ### 1. Install NVIDIA FLARE
 
 Follow the [Installation](https://nvflare.readthedocs.io/en/2.0/installation.html) instructions.
+
+> ⚠️ Please ensure you install version `2.0.16`
+
+> Requires specific protobuf version [NVFlare GitHub Issue](https://github.com/NVIDIA/NVFlare/issues/608)
+
 Install additional requirements:
 
 ```bash
-pip3 install torch
+pip install torch
+pip install protobuf==3.20
 ```
 
 ### 2. Set up your FL workspace
@@ -43,8 +49,8 @@ Log into the Admin client by entering `admin` for both the username and password
 Then, use these Admin commands to run the experiment:
 
 ```bash
-set_run_number 1
 upload_app <APPLICATION_NAME>
+set_run_number 1
 deploy_app <APPLICATION_NAME> all
 start_app all
 ```
@@ -57,4 +63,4 @@ shutdown client
 shutdown server
 ```
 
-> **_NOTE:_** For more information about the Admin client, see [here](https://nvidia.github.io/NVFlare/user_guide/admin_commands.html).
+> **_NOTE:_** For more information about the Admin client, see [here](https://nvflare.readthedocs.io/en/2.0/user_guide/admin_commands.html).
