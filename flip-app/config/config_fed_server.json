@@ -59,10 +59,10 @@
   "workflows": [
     {
       "id": "pre_training",
-      "path": "pre_training.DataRetrieval",
+      "path": "pre_training.InitTraining",
       "args": {
         "model_id": "{model_id}",
-        "retrieval_task_name": "retrieve_images"
+        "task_name": "init_training"
       }
     },
     {

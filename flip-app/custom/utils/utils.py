@@ -21,3 +21,7 @@ class Utils(object):
             return True
         except ValueError:
             return False
+
+    @staticmethod
+    def is_string_empty(val):
+        return val.strip() == ""

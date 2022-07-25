@@ -7,18 +7,6 @@
   "executors": [
     {
       "tasks": [
-        "retrieve_images"
-      ],
-      "executor": {
-        "path": "data_retrieval.DataRetrieval",
-        "args": {
-          "project_id": "{project_id}",
-          "net_id": "net-01"
-        }
-      }
-    },
-    {
-      "tasks": [
         "train",
         "submit_model"
       ],
@@ -26,7 +14,7 @@
         "path": "trainer.FLIP_TRAINER",
         "args": {
           "lr": "{lr}",
-          "epochs": "{global_rounds}",
+          "epochs": "{local_rounds}",
           "project_id": "{project_id}",
           "query": "{query}"
         }
@@ -95,9 +83,7 @@
     {
       "id": "cleanup_images",
       "path": "cleanup.CleanupImages",
-      "args": {
-        "net_id": "net-01"
-      }
+      "args": {}
     }
   ]
 }

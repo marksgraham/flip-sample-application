@@ -69,8 +69,8 @@ class ServerEventHandler(FLComponent):
         elif event_type == FlipEvents.CLEANUP_ERROR:
             self.log_error(fl_ctx, "Cleanup error event received")
 
-        elif event_type == FlipEvents.DATA_RETRIEVAL_STARTED:
-            self.log_info(fl_ctx, "Data retrieval event received")
+        elif event_type == FlipEvents.TRAINING_INITIATED:
+            self.log_info(fl_ctx, "Training initiated event received")
 
         elif event_type == AppEventType.INITIAL_MODEL_LOADED:
             self.log_info(fl_ctx, "Initial model loaded event received")
