@@ -32,7 +32,7 @@ class FLIP:
         """
 
     def get_by_accession_number(self, project_id: str, accession_id: str) -> Path:
-        """Calls the imaging-service to return a filepath that contains images downloaded from XNAT based
+        """Calls the FLIP service to return a filepath that contains images downloaded from XNAT based
            on the accession number
 
         Returns:
@@ -40,9 +40,9 @@ class FLIP:
         """
 
     def add_resource(self, project_id: str, accession_id: str, scan_id: str, resource_id: str, files: List[str]):
-        """Calls the imaging-service to upload image(s) to XNAT based on the accession number, scan ID, and resource ID
+        """Calls the FLIP service to upload image(s) to XNAT based on the accession number, scan ID, and resource ID
         """
 
     def update_status(self, model_id: str, new_model_status: ModelStatus):
-        """Updates the Central Hub model status
+        """INTENDED FOR INTERNAL USE ONLY. NOT TO BE CALLED BY THE TRAINER.
         """
