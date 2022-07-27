@@ -1,3 +1,5 @@
+# Copyright (c) 2021-2022, NVIDIA CORPORATION.  All rights reserved.
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -16,28 +18,21 @@ import shutil
 from nvflare.apis.fl_component import FLComponent
 from nvflare.apis.fl_context import FLContext
 
+from utils.flip_constants import FlipConstants
+
 
 class CleanupImages(FLComponent):
-    def __init__(self, net_id: str):
+    def __init__(self):
         """CleanupImages takes place as the final step of the run. All the images used for the training are
         deleted to prevent the build-up of unnecessary files on the storage space
-
-        Args:
-            net_id (str): ID of the net containing the images that the model used to perform training on.
-
-        Raises:
-           ValueError: when the net ID is empty or none.
         """
 
         super().__init__()
 
-        if not net_id:
-            raise ValueError(f"The net ID: {self.net_id} cannot be empty or None")
-
     def execute(self, fl_ctx: FLContext):
         try:
             self.log_info(
-                fl_ctx, "Images related to the training have been deleted successfully"
+                fl_ctx, "Cleanup executed successfully, images related to the training have been deleted"
             )
         except Exception as e:
             self.log_exception(fl_ctx, str(e))

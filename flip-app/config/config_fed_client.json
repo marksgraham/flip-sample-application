@@ -1,9 +1,9 @@
 {
   "format_version": 2,
   "lr": 0.01,
-  "project_id": "9d614a8b-29a4-48c5-aa6f-682c08372e48",
+  "project_id": "abcdefg123456789",
   "query": "SELECT * FROM Table;",
-  "global_rounds": 1,
+  "local_rounds": 1,
   "executors": [
     {
       "tasks": [

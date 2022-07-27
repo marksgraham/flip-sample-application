@@ -1,3 +1,5 @@
+# Copyright (c) 2021-2022, NVIDIA CORPORATION.  All rights reserved.
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -27,7 +29,7 @@ from datetime import datetime
 from nvflare.app_common.app_constant import AppConstants
 from nvflare.apis.fl_context import FLContext
 from nvflare.app_common.pt.pt_file_model_persistor import PTFileModelPersistor
-from utils.flip_constants import FlipConstants, ModelStatus
+from utils.flip_constants import ModelStatus
 from utils.utils import Utils
 from flip import FLIP
 
@@ -36,10 +38,10 @@ cwd = str(Path.cwd())  # Server dir
 
 class PersistToS3AndCleanup(FLComponent):
     def __init__(
-        self,
-        model_id: str,
-        persistor_id: str = AppConstants.DEFAULT_PERSISTOR_ID,
-        flip: FLIP = FLIP(),
+            self,
+            model_id: str,
+            persistor_id: str = AppConstants.DEFAULT_PERSISTOR_ID,
+            flip: FLIP = FLIP()
     ):
         """The component that is executed post training and is a part of the FLIP training model
 
@@ -62,7 +64,7 @@ class PersistToS3AndCleanup(FLComponent):
         self.persistor_id = persistor_id
         self.model_persistor = None
         self.model_inventory: dict = {}
-        
+
         self.flip = flip
 
         if Utils.is_valid_uuid(self.model_id) is False:
