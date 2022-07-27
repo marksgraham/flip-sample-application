@@ -20,7 +20,6 @@ from pt_constants import PTConstants
 
 import traceback
 import os
-import boto3
 import shutil
 
 from datetime import datetime

@@ -1,3 +1,15 @@
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 from flip import FLIP
 
 from nvflare.apis.executor import Executor
@@ -36,7 +48,6 @@ class DataRetrieval(Executor):
         self.project_id = project_id
         self.net_id = net_id
         self.retrieval_task_name = retrieval_task_name
-        self.images_dir = FlipConstants.IMAGES_DIR
         self.flip = flip
 
         if Utils.is_valid_uuid(project_id) is False:
@@ -57,6 +68,7 @@ class DataRetrieval(Executor):
                 if abort_signal.triggered:
                     return make_reply(ReturnCode.TASK_ABORTED)
 
+                path = "/path/to/data"
                 self.log_info(
                     fl_ctx,
                     f"Images related to the training have been downloaded successfully at path: {str(path)}",

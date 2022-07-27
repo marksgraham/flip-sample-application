@@ -123,7 +123,9 @@ class DataRetrieval(Controller):
             self.fire_event(FlipEvents.DATA_RETRIEVAL_STARTED, fl_ctx)
 
             self.broadcast_and_wait(
-                task=retrieval_task, min_responses=self.min_clients, fl_ctx=fl_ctx
+                task=retrieval_task, 
+                min_responses=self.min_clients, 
+                fl_ctx=fl_ctx
             )
 
             self.log_info(fl_ctx, "Retrieval of images step successful")
@@ -137,10 +139,7 @@ class DataRetrieval(Controller):
     def _check_abort_signal(self, fl_ctx, abort_signal: Signal):
         if abort_signal.triggered:
             self._phase = AppConstants.PHASE_FINISHED
-            self.log_info(
-                fl_ctx,
-                f"Abort signal received. Exiting at round {self._current_round}.",
-            )
+            self.log_info(fl_ctx, f"Abort signal received. Exiting at round {self._current_round}.")
             self.fire_event(FlipEvents.ABORTED, fl_ctx)
             return True
         return False
