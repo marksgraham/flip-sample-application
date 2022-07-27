@@ -31,8 +31,6 @@ class FLIP:
             DataFrame: pandas dataframe
         """
 
-        # return DataFrame([])
-
     def get_data(self, project_id: str, net_id: str) -> Path:
         """Calls the FLIP service to return a filepath that contains images and labels downloaded from XNAT.
 
