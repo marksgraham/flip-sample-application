@@ -48,7 +48,6 @@ class DataRetrieval(Executor):
         self.project_id = project_id
         self.net_id = net_id
         self.retrieval_task_name = retrieval_task_name
-        self.images_dir = FlipConstants.IMAGES_DIR
         self.flip = flip
 
         if Utils.is_valid_uuid(project_id) is False:

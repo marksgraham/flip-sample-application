@@ -30,6 +30,7 @@ Install additional requirements:
 ```bash
 pip install torch
 pip install protobuf==3.20
+pip install pandas
 ```
 
 ### 2. Set up your FL workspace
