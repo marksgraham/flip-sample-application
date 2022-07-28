@@ -74,7 +74,7 @@ class PTModelLocator(ModelLocator):
         else:
             self.log_error(
                 fl_ctx,
-                f"PTModelLocator doesn't recognize name: {model_name}",
-                fire_event=False,
+                f"PTModelLocator doesn't recognize name: {model_name}", 
+                fire_event=False
             )
             return None
