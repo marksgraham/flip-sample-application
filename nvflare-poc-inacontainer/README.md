@@ -24,7 +24,7 @@ Use the docker build commands and run the container
 ### 3. Run Docker Container
 
 If you exec into the container you should be able to run ``fl-admin.sh``
-This will give you access to all the NVFlare Admin commands as per
+This will give you access to all the NVFlare Admin commands
 
 
 ``docker exec -it <name> bash``
