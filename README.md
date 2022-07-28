@@ -30,6 +30,7 @@ Install additional requirements:
 ```bash
 pip install torch
 pip install protobuf==3.20
+pip install pandas
 ```
 
 ### 2. Set up your FL workspace
@@ -64,3 +65,24 @@ shutdown server
 ```
 
 > **_NOTE:_** For more information about the Admin client, see [here](https://nvflare.readthedocs.io/en/2.0/user_guide/admin_commands.html).
+
+## **FLIP methods**
+The following methods are available to be used in training, located in `flip.py`:
+
+- `get_dataframe(self, project_id: str, query: str) -> DataFrame`
+   This retrieves data in the form of a Dataframe containing, at the minimum, accession IDs.
+   The method takes in the project ID and the project query as parameters. These values are
+   already passed in as parameters to the trainer to be used.
+
+- `get_data(self, project_id: str, net_id: str) -> Path`
+   This method is for internal use only, and is not be called by the trainer.
+
+- `update_status(self, model_id: str, new_model_status: ModelStatus)`
+   This method is for internal use only, and is not be called by the trainer.
+
+### Import FLIP and call methods
+- Import the module: `from flip import FLIP`
+- Make an instance of the class: `flip = FLIP()`
+- Use the instance to call one of the methods: `dataframe = flip.get_dataframe(project_id, query)`
+
+This will allow successful calls to any the methods in `flip.py`.

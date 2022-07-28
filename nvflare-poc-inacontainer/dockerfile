@@ -18,4 +18,5 @@ ENV PATH="${PATH}:/nvflare/poc/admin/startup"
 
 WORKDIR /nvflare/
 
+RUN chmod 777 ./process.sh
 CMD ["./process.sh"]

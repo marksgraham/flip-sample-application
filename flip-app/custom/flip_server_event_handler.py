@@ -1,3 +1,15 @@
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 from nvflare.apis.event_type import EventType
 from nvflare.apis.fl_component import FLComponent
 from nvflare.apis.fl_context import FLContext
@@ -40,10 +52,7 @@ class ServerEventHandler(FLComponent):
         self.persist_and_cleanup = None
         self.flip = flip
 
-        self.final_status = None
-
         if Utils.is_valid_uuid(self.model_id) is False:
-            self.flip.update_status(self.model_id, ModelStatus.ERROR)
             raise ValueError(f"The model ID: {self.model_id} is not a valid UUID")
 
     def handle_event(self, event_type: str, fl_ctx: FLContext):
@@ -53,19 +62,21 @@ class ServerEventHandler(FLComponent):
 
         if event_type == EventType.FATAL_SYSTEM_ERROR:
             self.log_error(fl_ctx, "Fatal system error event received")
-            self.final_status = ModelStatus.ERROR
+
+        elif event_type == FlipEvents.RESULTS_UPLOAD_ERROR:
+            self.log_error(fl_ctx, "Results upload error event received")
+
+        elif event_type == FlipEvents.CLEANUP_ERROR:
+            self.log_error(fl_ctx, "Cleanup error event received")
 
         elif event_type == FlipEvents.DATA_RETRIEVAL_STARTED:
             self.log_info(fl_ctx, "Data retrieval event received")
-            self.flip.update_status(self.model_id, ModelStatus.INITIATED)
 
         elif event_type == AppEventType.INITIAL_MODEL_LOADED:
             self.log_info(fl_ctx, "Initial model loaded event received")
-            self.flip.update_status(self.model_id, ModelStatus.PREPARED)
 
         elif event_type == AppEventType.TRAINING_STARTED:
             self.log_info(fl_ctx, "Training started event received")
-            self.flip.update_status(self.model_id, ModelStatus.TRAINING_STARTED)
 
         elif event_type == AppEventType.TRAINING_FINISHED:
             self.log_info(fl_ctx, "Training finished event received")
@@ -75,23 +86,13 @@ class ServerEventHandler(FLComponent):
 
         elif event_type == FlipEvents.ABORTED:
             self.log_info(fl_ctx, "Aborted event received")
-            self.final_status = ModelStatus.STOPPED
 
         elif event_type == EventType.START_RUN:
             self.log_info(fl_ctx, "Start run event received")
 
         elif event_type == EventType.END_RUN:
             self.log_info(fl_ctx, "End run event received")
-
-            try:
-                self.persist_and_cleanup.execute(fl_ctx)
-
-                if self.final_status != ModelStatus.STOPPED and self.final_status != ModelStatus.ERROR:
-                    self.final_status = ModelStatus.RESULTS_UPLOADED
-            except Exception:
-                self.final_status = ModelStatus.ERROR
-            
-            self.flip.update_status(self.model_id, self.final_status)
+            self.persist_and_cleanup.execute(fl_ctx)
 
     def __set_dependencies(self, fl_ctx: FLContext):
         if self.validation_json_generator is None:
