@@ -3,10 +3,7 @@
 This is a dockerfile that will create a container with a NVFlare Server and two containers and start them.
 Copy any NVFlare to ``/apps`` directory, the dockerfile will copy applications in this folder to the transfer section of NVFlare Admin.
 
-
-To run either use Jetbrains Docker Service plugin (Recommended)
-
-OR
+Instructions: 
 
 Use the docker build commands
 
