@@ -18,5 +18,7 @@ If you exec into the container you should be able to run ``fl-admin.sh``
 ``docker exec -it <name> bash``
 
 If your using CIFAS you will need to disable downloads otherwise it will try and download the CIFAS dataset which has problem from within a container.
+All NVFlare logs are printed to stdout, which means you can view them by using the docker logs command
 
+``docker logs <name>``
 
