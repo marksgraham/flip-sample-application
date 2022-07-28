@@ -51,6 +51,7 @@ class PersistToS3AndCleanup(FLComponent):
         Args:
             model_id (str): ID of the model that the training is being performed under.
             persistor_id (str, optional): ID of the persistor component. Defaults to "persistor".
+            flip (FLIP, optional): an instance of the FLIP module.
 
         Raises:
            ValueError:

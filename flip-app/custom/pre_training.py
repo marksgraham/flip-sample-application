@@ -42,6 +42,7 @@ class InitTraining(Controller):
             min_clients (int, optional): Minimum number of clients. Defaults to 2 for the aggregation to take place with
                 successful results.
             task_name (str, optional): Name of the task. Defaults to "init_training".
+            flip (FLIP, optional): an instance of the FLIP module.
 
         Raises:
            ValueError:
