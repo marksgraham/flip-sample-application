@@ -3,19 +3,30 @@
 This is a dockerfile that will create a container with a NVFlare Server and two containers and start them.
 Copy any NVFlare to ``/apps`` directory, the dockerfile will copy applications in this folder to the transfer section of NVFlare Admin.
 
-Instructions: 
+### 1. Do not download CIFAS data
 
-Use the docker build commands
+If you are using the CIFAS10 dataset you will need to disable downloads otherwise it will try and download the CIFAS dataset which has problems sometimes from within a container.
 
-``docker build -t xnat-in-one .``
+```python
+self._train_dataset = CIFAR10(
+            root="~/data", transform=transforms, download=True, train=False
+        )
+```
+
+### 2. Build Docker Container
+
+Use the docker build commands and run the container
+
+``docker build -t xnat-in-one ``
+
 ``docker run xnat-in-one``
 
+### 3. Run Docker Container
+
 If you exec into the container you should be able to run ``fl-admin.sh``
+This will give you access to all the NVFlare Admin commands as per
+
 
 ``docker exec -it <name> bash``
-
-If your using CIFAS you will need to disable downloads otherwise it will try and download the CIFAS dataset which has problem from within a container.
-All NVFlare logs are printed to stdout, which means you can view them by using the docker logs command
-
 ``docker logs <name>``
 
