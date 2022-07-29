@@ -86,3 +86,43 @@ The following methods are available to be used in training, located in `flip.py`
 - Use the instance to call one of the methods: `dataframe = flip.get_dataframe(project_id, query)`
 
 This will allow successful calls to any the methods in `flip.py`.
+
+## **Load config into trainer**
+The `config.json` file allows variables to be defined and utilised within the trainer files.
+
+An example of a config file:
+```
+{
+	"GLOBAL_ROUNDS": 1,
+	"LOCAL_ROUNDS": 1,
+	"ROUND_HALF_UP": true,
+	"LOSS_FUNCTION_START_VALUE": 1.0,
+	"DAYS_OF_WEEK": [
+		"mon",
+		"tue",
+		"wed",
+		"thu",
+		"fri",
+		"sat",
+		"sun"
+	]
+}
+```
+
+To use the config file within the trainer:
+
+```
+import json
+
+
+self.config = {}
+
+current_dir = os.path.dirname(__file__)
+config_file = os.path.join(current_dir, "config.json")
+
+with open(config_file) as file:
+   self.config = json.load(file)
+```
+
+NOTE: As the sample application is a proof of concept, updating the global and local rounds in 
+the config file will not dynamically update the global and local round values.
