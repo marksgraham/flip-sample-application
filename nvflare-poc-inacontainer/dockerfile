@@ -1,0 +1,22 @@
+FROM python:3.8.10
+
+RUN python3 -m pip install -U pip
+RUN python3 -m pip install -U setuptools
+RUN python3 -m pip install torch torchvision tensorboard nvflare==2.0.16
+RUN python3 -m pip install boto3 pandas protobuf==3.20
+
+COPY cifar-10-batches-py /root/data/cifar-10-batches-py
+
+WORKDIR /nvflare/
+RUN git clone https://github.com/NVIDIA/NVFlare.git
+COPY start_nvflare_components.sh process.sh
+RUN yes | poc -n 2
+
+WORKDIR /nvflare/poc/admin/
+COPY apps transfer/
+ENV PATH="${PATH}:/nvflare/poc/admin/startup"
+
+WORKDIR /nvflare/
+
+RUN chmod 777 ./process.sh
+CMD ["./process.sh"]

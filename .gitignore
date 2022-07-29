@@ -5,6 +5,10 @@ __pycache__/
 
 # C extensions
 *.so
+.idea
+
+nvflare-poc-inacontainer/apps/*
+!.gitkeep
 
 # Distribution / packaging
 .Python
