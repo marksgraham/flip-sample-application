@@ -28,6 +28,7 @@ jobs:
       - name: Run NVFlare and Test
         run: |
           cp ./nvflare-poc-inacontainer/test.py /nvflare/poc/admin/test.py
+          cp ./flip-app /nvflare/poc/admin/transfer
           cd /nvflare
           ./process.sh &
           cd /nvflare/poc/admin
