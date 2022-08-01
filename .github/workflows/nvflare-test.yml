@@ -28,5 +28,6 @@ jobs:
 
       - name: Run LS Command and List All Files
         run: |
+          cd /nvflare/poc/admin
           python3 /nvflare/poc/admin/test.py
 
