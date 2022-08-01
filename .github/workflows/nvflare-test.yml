@@ -27,6 +27,7 @@ jobs:
       - uses: actions/checkout@v3
       - name: NVFlare CI
         run: |
+          ps -aux
           cp ./nvflare-poc-inacontainer/test.py /nvflare/poc/admin/test.py
           cd /nvflare/poc/admin
           python3 /nvflare/poc/admin/test.py
