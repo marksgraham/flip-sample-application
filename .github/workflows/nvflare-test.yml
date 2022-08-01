@@ -29,10 +29,10 @@ jobs:
         run: |
           cp ./nvflare-poc-inacontainer/test.py /nvflare/poc/admin/test.py
           cp ./flip-app /nvflare/poc/admin/transfer/flip-app -r
+          cp ./nvflare-poc-inacontainer/trainer.py /nvflare/poc/admin/transfer/flip-app/trainer.py
           cd /nvflare
           ./process.sh &
           cd /nvflare/poc/admin
-          ps -aux
           python3 /nvflare/poc/admin/test.py
       - name: Archive Server Logs
         uses: actions/upload-artifact@v3
