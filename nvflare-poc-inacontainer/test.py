@@ -11,7 +11,7 @@ import time
 from nvflare.fuel.hci.client.fl_admin_api import FLAdminAPI
 
 api = FLAdminAPI(
-    host="localhost",
+    host="127.0.0.1",
     port=8003,
     # ca_cert="rootCA.pem",
     # client_cert="client.crt",
