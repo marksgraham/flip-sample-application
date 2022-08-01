@@ -1,3 +1,5 @@
+![example workflow](https://github.com/github/docs/actions/workflows/nvflare-test.yml/badge.svg)
+
 # Sample FLIP Application
 
 The purpose of this repository is to provide a sample application that can be developed and tested locally before being uploaded onto FLIP.
