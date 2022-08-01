@@ -28,9 +28,9 @@ jobs:
       - name: NVFlare CI
         run: |
           ps -aux
+          cp ./nvflare-poc-inacontainer/test.py /nvflare/poc/admin/test.py
           cd /nvflare
           ./process.sh &
-          cp ./nvflare-poc-inacontainer/test.py /nvflare/poc/admin/test.py
           cd /nvflare/poc/admin
           python3 /nvflare/poc/admin/test.py
 
