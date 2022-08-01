@@ -19,7 +19,7 @@ jobs:
     container:
       image: ghcr.io/answerconsulting/nvflare-build-ci:2.0.16
       credentials:
-        username: ${{ github.actor }}
+        username: robg-answer
         password: ${{ secrets.GHCR_TOKEN }}
 
 
