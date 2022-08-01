@@ -1,4 +1,4 @@
-![example workflow](https://github.com/github/docs/actions/workflows/nvflare-test.yml/badge.svg)
+![example workflow](https://github.com/answerconsulting/flip-sample-application/actions/workflows/nvflare-test.yml/badge.svg)
 
 # Sample FLIP Application
 
