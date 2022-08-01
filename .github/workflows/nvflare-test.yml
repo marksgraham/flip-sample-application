@@ -25,7 +25,7 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-      - name: NVFlare CI
+      - name: Run NVFlare and Test
         run: |
           cp ./nvflare-poc-inacontainer/test.py /nvflare/poc/admin/test.py
           cd /nvflare
@@ -33,4 +33,18 @@ jobs:
           cd /nvflare/poc/admin
           ps -aux
           python3 /nvflare/poc/admin/test.py
-
+      - name: Archive Server Logs
+        uses: actions/upload-artifact@v3
+        with:
+          name: server-logs
+          path: /nvflare/poc/server/log.txt
+      - name: Archive Trust A Logs
+        uses: actions/upload-artifact@v3
+        with:
+          name: trust-a-logs
+          path: /nvflare/poc/site-1/log.txt
+      - name: Archive Trust B Logs
+        uses: actions/upload-artifact@v3
+        with:
+          name: trust-b-logs
+          path: /nvflare/poc/site-2/log.txt
