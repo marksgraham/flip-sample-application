@@ -18,11 +18,13 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/answerconsulting/nvflare-build-ci:2.0.16
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
 
     steps:
     - uses: actions/checkout@v3
-      with:
-        repo-token: ${{ secrets.GITHUB_TOKEN }}
+
     - name: Run LS Command and List All Files
       run: | 
         ls
