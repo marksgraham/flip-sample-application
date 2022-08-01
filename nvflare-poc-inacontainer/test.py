@@ -25,6 +25,7 @@ api = FLAdminAPI(
 
 def wrapper(api_command_result):
     if api_command_result["status"] != "SUCCESS":
+        print(api_command_result)
         raise RuntimeError(api_command_result["status"])
     return api_command_result
 
