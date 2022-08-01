@@ -31,6 +31,9 @@ def wrapper(api_command_result):
 
 
 def main():
+    with open("../server/log.txt") as f:
+        print(f.readlines())
+
     time.sleep(30)
     wrapper(api.login_with_password("admin", "admin"))
 
