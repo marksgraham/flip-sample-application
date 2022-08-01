@@ -25,7 +25,7 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-      - name: Start the NVFlare CI
+      - name: NVFlare CI
         run: |
           cd /nvflare/poc/admin
           python3 /nvflare/poc/admin/test.py

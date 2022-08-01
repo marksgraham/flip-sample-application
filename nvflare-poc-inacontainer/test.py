@@ -30,6 +30,7 @@ def wrapper(api_command_result):
 
 
 def main():
+    time.sleep(30)
     wrapper(api.login_with_password("admin", "admin"))
 
     wrapper(api.upload_app("flip-app"))
