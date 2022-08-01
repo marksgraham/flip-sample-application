@@ -20,7 +20,7 @@ jobs:
       image: ghcr.io/answerconsulting/nvflare-build-ci:2.0.16
       credentials:
         username: ${{ github.actor }}
-        password: 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
+        password: ${{ secrets.GHCR_TOKEN }}
 
 
     steps:
