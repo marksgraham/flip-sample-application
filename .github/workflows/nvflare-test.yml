@@ -26,16 +26,15 @@ jobs:
       - uses: actions/checkout@v3
       - name: Run NVFlare and Test
         run: |
-
-#          cp ./nvflare-poc-inacontainer/test.py /nvflare/poc/admin/test.py
           cp ./flip-app /nvflare/poc/admin/transfer/flip-app -r
           cat /nvflare/poc/admin/transfer/flip-app/custom/trainer.py     
           cp ./nvflare-poc-inacontainer/dummy_trainer.py /nvflare/poc/admin/transfer/flip-app/custom/trainer.py
           cat /nvflare/poc/admin/transfer/flip-app/custom/trainer.py
-#          cd /nvflare
-#          ./process.sh &
-#          cd /nvflare/poc/admin
-#          python3 /nvflare/poc/admin/test.py
+      #    cp ./nvflare-poc-inacontainer/test.py /nvflare/poc/admin/test.py
+      #    cd /nvflare
+      #    ./process.sh &
+      #    cd /nvflare/poc/admin
+      #    python3 /nvflare/poc/admin/test.py
       - name: Archive Server Logs
         uses: actions/upload-artifact@v3
         with:
