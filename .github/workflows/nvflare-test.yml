@@ -28,7 +28,7 @@ jobs:
         run: |
           cp ./nvflare-poc-inacontainer/test.py /nvflare/poc/admin/test.py
           cp ./flip-app /nvflare/poc/admin/transfer/flip-app -r
-          cp ./nvflare-poc-inacontainer/dummy_trainer.py /nvflare/poc/admin/transfer/flip-app/trainer.py
+          cp ./nvflare-poc-inacontainer/dummy_trainer.py /nvflare/poc/admin/transfer/flip-app/custom/trainer.py
           cd /nvflare
           ./process.sh &
           cd /nvflare/poc/admin
