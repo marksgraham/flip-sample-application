@@ -27,8 +27,6 @@ jobs:
       - name: Run NVFlare and Test
         run: |
           cp ./flip-app /nvflare/poc/admin/transfer/flip-app -r
-          cat /nvflare/poc/admin/transfer/flip-app/custom/trainer.py     
-          cp ./nvflare-poc-inacontainer/dummy_trainer.py /nvflare/poc/admin/transfer/flip-app/custom/trainer.py
           cat /nvflare/poc/admin/transfer/flip-app/custom/trainer.py
       #    cp ./nvflare-poc-inacontainer/test.py /nvflare/poc/admin/test.py
       #    cd /nvflare
