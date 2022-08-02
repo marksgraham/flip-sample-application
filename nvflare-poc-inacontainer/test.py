@@ -30,8 +30,21 @@ def wrapper(api_command_result):
     return api_command_result
 
 
+def has_error():
+    result_trust_a = wrapper(api.cat_target(target="TRUST-A", file="log.txt"))
+    result_trust_b = wrapper(api.cat_target(target="TRUST-A", file="log.txt"))
+    result_server = wrapper(api.cat_target(target="server", file="log.txt"))
+
+    if "ERROR" or "exception" in result_trust_a["details"]["message"]:
+        return True
+    if "ERROR" or "exception" in result_trust_b["details"]["message"]:
+        return True
+    if "ERROR" or "exception" in result_server["details"]["message"]:
+        return True
+    return False
+
 def main():
-    time.sleep(20)
+    time.sleep(15)
     wrapper(api.login_with_password("admin", "admin"))
 
     wrapper(api.upload_app("flip-app"))
@@ -45,8 +58,11 @@ def main():
         print("server engine status: " + status["details"]["server_engine_status"])
         print("FL still in progress. Waiting for FL run to finish.")
         print("will check server engine status again soon...")
-        time.sleep(3)
+        time.sleep(10)
         status = wrapper(api.check_status("server"))
+        if has_error():
+            raise RuntimeError("Error detected while training - Check logs for error details")
+
     print("server engine has finished running application")
 
     result = wrapper(api.ls_target("server", "-R"))
@@ -56,19 +72,9 @@ def main():
     else:
         print("Aggregated model found. FL run was successful!")
 
-    result_trust_a = wrapper(api.cat_target(target="TRUST-A", file="log.txt"))
-    result_trust_b = wrapper(api.cat_target(target="TRUST-A", file="log.txt"))
-    result_server = wrapper(api.cat_target(target="server", file="log.txt"))
-
-    if "ERROR" in result_trust_a["details"]["message"]:
-        raise RuntimeError("ERROR reported on Trust A")
-    if "ERROR" in result_trust_b["details"]["message"]:
-        raise RuntimeError("ERROR reported on Trust B")
-    if "ERROR" in result_server["details"]["message"]:
-        raise RuntimeError("ERROR reported on Server")
-
     sys.exit(0)
 
 
 if __name__ == "__main__":
     main()
+
