@@ -159,7 +159,7 @@ class FLIP_TRAINER(Executor):
 
                 # Convert weights to tensor. Run training
                 torch_weights = {k: torch.as_tensor(v) for k, v in dxo.data.items()}
-                self.local_train(fl_ctx, torch_weights, abort_signal)
+                # self.local_train(fl_ctx, torch_weights, abort_signal)
 
                 # Check the abort_signal after training.
                 # local_train returns early if abort_signal is triggered.
