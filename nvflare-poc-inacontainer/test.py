@@ -35,11 +35,13 @@ def has_error():
     result_trust_b = wrapper(api.cat_target(target="TRUST-A", file="log.txt"))
     result_server = wrapper(api.cat_target(target="server", file="log.txt"))
 
-    if "ERROR" or "ConfigError" in result_trust_a["details"]["message"]:
+    matches = ["ERROR", "ConfigError"]
+
+    if any(x in matches for x in result_trust_a["details"]["message"]):
         return True
-    if "ERROR" or "ConfigError" in result_trust_b["details"]["message"]:
+    if any(x in matches for x in result_trust_b["details"]["message"]):
         return True
-    if "ERROR" or "ConfigError" in result_server["details"]["message"]:
+    if any(x in matches for x in result_server["details"]["message"]):
         return True
     return False
 

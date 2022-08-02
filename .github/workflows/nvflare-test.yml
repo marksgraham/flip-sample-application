@@ -29,7 +29,6 @@ jobs:
           cp ./flip-app /nvflare/poc/admin/transfer/flip-app -r
           cp ./nvflare-poc-inacontainer/dummy_trainer.py /nvflare/poc/admin/transfer/flip-app/custom/trainer.py
           cp ./nvflare-poc-inacontainer/dummy_validator.py /nvflare/poc/admin/transfer/flip-app/custom/validator.py
-          cat /nvflare/poc/admin/transfer/flip-app/custom/trainer.py
           cp ./nvflare-poc-inacontainer/test.py /nvflare/poc/admin/test.py
           cd /nvflare
           ./process.sh &
