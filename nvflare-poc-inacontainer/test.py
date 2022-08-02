@@ -45,6 +45,7 @@ def has_error():
         return True
     return False
 
+
 def main():
     time.sleep(15)
     wrapper(api.login_with_password("admin", "admin"))
@@ -79,4 +80,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
