@@ -83,7 +83,7 @@ class FLIP_TRAINER(Executor):
             ]
         )
         self._train_dataset = CIFAR10(
-            root="~/data", transform=transforms, download=False, train=True
+            root="/root/data", transform=transforms, download=False, train=True
         )
         self._train_loader = DataLoader(self._train_dataset, batch_size=4, shuffle=True)
         self._n_iterations = len(self._train_loader)
