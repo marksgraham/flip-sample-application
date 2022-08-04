@@ -1,0 +1,53 @@
+# This workflow will install Python dependencies, run tests and lint with a single version of Python
+# For more information see: https://help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
+
+name: NVFlare Test
+
+on:
+  push:
+    branches: [ "main", "develop" ]
+  pull_request:
+    branches: [ "main", "develop" ]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/answerconsulting/nvflare-build-ci:2.0.16
+      credentials:
+        username: robg-answer
+        password: ${{ secrets.GHCR_TOKEN }}
+
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Run NVFlare and Test
+        run: |
+          cp ./flip-app /nvflare/poc/admin/transfer/flip-app -r
+          sed -i 's/download=True/download=False/' /nvflare/poc/admin/transfer/flip-app/custom/trainer.py
+          sed -i 's/root="~\/data"/root="\/root\/data"/' /nvflare/poc/admin/transfer/flip-app/custom/trainer.py
+          sed -i 's/root="~\/data"/root="\/root\/data"/' /nvflare/poc/admin/transfer/flip-app/custom/validator.py
+          sed -i 's/self.local_train(fl_ctx, torch_weights, abort_signal)/# self.local_train(fl_ctx, torch_weights, abort_signal)/' /nvflare/poc/admin/transfer/flip-app/custom/trainer.py
+          cp ./nvflare-poc-inacontainer/test.py /nvflare/poc/admin/test.py
+          cd /nvflare
+          ./process.sh &
+          cd /nvflare/poc/admin
+          python3 /nvflare/poc/admin/test.py
+      - name: Archive Server Logs
+        uses: actions/upload-artifact@v3
+        with:
+          name: server-logs
+          path: /nvflare/poc/server/log.txt
+      - name: Archive Trust A Logs
+        uses: actions/upload-artifact@v3
+        with:
+          name: trust-a-logs
+          path: /nvflare/poc/site-1/log.txt
+      - name: Archive Trust B Logs
+        uses: actions/upload-artifact@v3
+        with:
+          name: trust-b-logs
+          path: /nvflare/poc/site-2/log.txt
