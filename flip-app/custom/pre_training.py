@@ -25,24 +25,24 @@ from utils.flip_constants import FlipConstants, ModelStatus, FlipEvents
 from utils.utils import Utils
 
 
-class DataRetrieval(Controller):
+class InitTraining(Controller):
     def __init__(
-        self,
-        model_id: str,
-        min_clients: int = FlipConstants.MIN_CLIENTS,
-        retrieval_task_name: str = FlipConstants.RETRIEVE_IMAGES,
-        flip: FLIP = FLIP(),
+            self,
+            model_id: str,
+            min_clients: int = FlipConstants.MIN_CLIENTS,
+            task_name: str = FlipConstants.INIT_TRAINING,
+            flip: FLIP = FLIP()
     ):
         """The controller that is executed pre-training and is a part of the FLIP training model
 
-        The DataRetrieval workflow sends a request to each of the participating clients to retrieve the images that it
-            will use for training
+        The InitTraining workflow sends a request to the Cental Hub, stating that training has initiated
 
         Args:
             model_id (str): ID of the model that the training is being performed under.
             min_clients (int, optional): Minimum number of clients. Defaults to 2 for the aggregation to take place with
                 successful results.
-            retrieval_task_name (str, optional): Name of the retrieval task. Defaults to "retrieve_images".
+            task_name (str, optional): Name of the task. Defaults to "init_training".
+            flip (FLIP, optional): an instance of the FLIP module.
 
         Raises:
            ValueError:
@@ -53,7 +53,7 @@ class DataRetrieval(Controller):
         super().__init__()
         self.model_id = model_id
         self.min_clients = min_clients
-        self.retrieval_task_name = retrieval_task_name
+        self.task_name = task_name
         self.flip = flip
 
         try:
@@ -61,19 +61,18 @@ class DataRetrieval(Controller):
                 raise ValueError(f"The model ID: {self.model_id} is not a valid UUID")
 
             if self.min_clients < FlipConstants.MIN_CLIENTS:
-                raise ValueError(
-                    f"Invalid number of minimum clients specified. {self.min_clients} is less than "
-                    f"{FlipConstants.MIN_CLIENTS} which is the minimum number for a successful aggregation"
-                )
+                raise ValueError(f"Invalid number of minimum clients specified. {self.min_clients} is less than "
+                                 f"{FlipConstants.MIN_CLIENTS} which is the minimum number for a successful aggregation"
+                                 )
         except ValueError as e:
             self.flip.update_status(self.model_id, ModelStatus.ERROR)
             raise ValueError(e)
 
     def start_controller(self, fl_ctx: FLContext):
-        self.log_info(fl_ctx, "Initializing DataRetrieval workflow.")
+        self.log_info(fl_ctx, "Initializing InitTraining workflow.")
         engine = fl_ctx.get_engine()
         if not engine:
-            self.system_panic("Engine not found. DataRetrieval exiting.", fl_ctx)
+            self.system_panic("Engine not found. InitTraining exiting.", fl_ctx)
             return
 
     def control_flow(self, abort_signal: Signal, fl_ctx: FLContext):
@@ -81,63 +80,39 @@ class DataRetrieval(Controller):
             if self._check_abort_signal(fl_ctx, abort_signal):
                 return
 
-            self.log_info(fl_ctx, "Beginning DataRetrieval control flow phase.")
-            self.retrieve_images(fl_ctx)
+            self.log_info(fl_ctx, "Beginning InitTraining control flow phase.")
+            self.init_training(fl_ctx)
 
             if self._check_abort_signal(fl_ctx, abort_signal):
                 return
         except BaseException as e:
             traceback.print_exc()
-            error_msg = f"Exception in DataRetrieval control_flow: {e}"
+            error_msg = f"Exception in InitTraining control_flow: {e}"
             self.log_exception(fl_ctx, error_msg)
             self.system_panic(str(e), fl_ctx)
 
     def stop_controller(self, fl_ctx: FLContext) -> None:
-        self.log_info(fl_ctx, "Stopping DataRetrieval controller")
+        self.log_info(fl_ctx, "Stopping InitTraining controller")
         self.cancel_all_tasks()
 
     def process_result_of_unknown_task(
-        self,
-        client: Client,
-        task_name,
-        client_task_id,
-        result: Shareable,
-        fl_ctx: FLContext,
+            self, client: Client, task_name, client_task_id, result: Shareable, fl_ctx: FLContext
     ) -> None:
         self.log_error(fl_ctx, "Ignoring result from unknown task.")
 
-    def retrieve_images(self, fl_ctx: FLContext):
+    def init_training(self, fl_ctx: FLContext):
         try:
-            self.log_info(
-                fl_ctx,
-                "Attempting to start the step to retrieve and download the images required for training...",
-            )
-            shareable = Shareable()
-
-            retrieval_task = Task(
-                name=self.retrieval_task_name, data=shareable, props={}
-            )
-
-            self.fire_event(FlipEvents.DATA_RETRIEVAL_STARTED, fl_ctx)
-
-            self.broadcast_and_wait(
-                task=retrieval_task, 
-                min_responses=self.min_clients, 
-                fl_ctx=fl_ctx
-            )
-
-            self.log_info(fl_ctx, "Retrieval of images step successful")
-
+            self.log_info(fl_ctx, "Attempting to start the step to initialise training...")
+            self.fire_event(FlipEvents.TRAINING_INITIATED, fl_ctx)
         except Exception as e:
             traceback.print_exc()
-            self.log_error(fl_ctx, "Retrieval of images step failed")
             self.log_error(fl_ctx, str(e))
             self.system_panic(str(e), fl_ctx)
 
     def _check_abort_signal(self, fl_ctx, abort_signal: Signal):
         if abort_signal.triggered:
             self._phase = AppConstants.PHASE_FINISHED
-            self.log_info(fl_ctx, f"Abort signal received. Exiting at round {self._current_round}.")
+            self.log_info(fl_ctx, f"Abort signal received.")
             self.fire_event(FlipEvents.ABORTED, fl_ctx)
             return True
         return False

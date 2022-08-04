@@ -52,6 +52,8 @@ class ServerEventHandler(FLComponent):
         self.persist_and_cleanup = None
         self.flip = flip
 
+        self.final_status = None
+
         if Utils.is_valid_uuid(self.model_id) is False:
             raise ValueError(f"The model ID: {self.model_id} is not a valid UUID")
 
@@ -62,15 +64,10 @@ class ServerEventHandler(FLComponent):
 
         if event_type == EventType.FATAL_SYSTEM_ERROR:
             self.log_error(fl_ctx, "Fatal system error event received")
+            self.final_status = ModelStatus.ERROR
 
-        elif event_type == FlipEvents.RESULTS_UPLOAD_ERROR:
-            self.log_error(fl_ctx, "Results upload error event received")
-
-        elif event_type == FlipEvents.CLEANUP_ERROR:
-            self.log_error(fl_ctx, "Cleanup error event received")
-
-        elif event_type == FlipEvents.DATA_RETRIEVAL_STARTED:
-            self.log_info(fl_ctx, "Data retrieval event received")
+        elif event_type == FlipEvents.TRAINING_INITIATED:
+            self.log_info(fl_ctx, "Training initiated event received")
 
         elif event_type == AppEventType.INITIAL_MODEL_LOADED:
             self.log_info(fl_ctx, "Initial model loaded event received")
@@ -86,13 +83,21 @@ class ServerEventHandler(FLComponent):
 
         elif event_type == FlipEvents.ABORTED:
             self.log_info(fl_ctx, "Aborted event received")
+            self.final_status = ModelStatus.STOPPED
 
         elif event_type == EventType.START_RUN:
             self.log_info(fl_ctx, "Start run event received")
 
         elif event_type == EventType.END_RUN:
             self.log_info(fl_ctx, "End run event received")
-            self.persist_and_cleanup.execute(fl_ctx)
+
+            try:
+                self.persist_and_cleanup.execute(fl_ctx)
+
+                if self.final_status != ModelStatus.STOPPED and self.final_status != ModelStatus.ERROR:
+                    self.final_status = ModelStatus.RESULTS_UPLOADED
+            except Exception:
+                self.final_status = ModelStatus.ERROR
 
     def __set_dependencies(self, fl_ctx: FLContext):
         if self.validation_json_generator is None:
