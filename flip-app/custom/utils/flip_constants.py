@@ -17,15 +17,13 @@ import os
 class FlipConstants(object):
     CLEANUP: str = "cleanup"
     MIN_CLIENTS: int = 2
-    RETRIEVE_IMAGES: str = "retrieve_images"
+    INIT_TRAINING: str = "init_training"
 
 
 class FlipEvents(object):
-    DATA_RETRIEVAL_STARTED = "_data_retrieval_started"
+    TRAINING_INITIATED = "_training_initiated"
     RESULTS_UPLOAD_STARTED = "_results_upload_started"
     RESULTS_UPLOAD_COMPLETED = "_results_upload_completed"
-    RESULTS_UPLOAD_ERROR = "_results_upload_error"
-    CLEANUP_ERROR = "_cleanup_error"
     ABORTED = "_aborted"
 
 

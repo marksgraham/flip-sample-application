@@ -72,15 +72,32 @@ shutdown server
 The following methods are available to be used in training, located in `flip.py`:
 
 - `get_dataframe(self, project_id: str, query: str) -> DataFrame`
-   This retrieves data in the form of a Dataframe containing, at the minimum, accession IDs.
-   The method takes in the project ID and the project query as parameters. These values are
-   already passed in as parameters to the trainer to be used.
+  This retrieves data in the form of a Dataframe containing, at the minimum, accession IDs.
+  The method takes in the project ID and the project query as parameters. These values are
+  already passed in as parameters to the trainer to be used.
 
-- `get_data(self, project_id: str, net_id: str) -> Path`
-   This method is for internal use only, and is not be called by the trainer.
+- `get_by_accession_number(self, project_id: str, accession_id: str) -> Path`
+  This downloads scans and places them in a directory made available for NVFlare to utilise.
+  The method takes in the project ID as a parameter as well as an accession ID, which can be 
+  obtained from `get_dataframe`. It returns the path to where the scans are stored.
 
-- `update_status(self, model_id: str, new_model_status: ModelStatus)`
-   This method is for internal use only, and is not be called by the trainer.
+- `add_resource(self, project_id: str, accession_id: str, scan_id: str, resource_id: str, files: List[str])`
+  This allows uploading scans to XNAT under the project that the model to. Scans are to be placed 
+  in the `uploads` directory.
+  The method does not have a return type. It supports the following required parameters: 
+    - project ID
+    - accession ID 
+    - scan ID (ID/label of the directory at the scan level)
+    - resource ID (ID/label of the directory at the resource level) 
+    - a list of files corresponding to the names of the files that reside within the `uploads` 
+    directory that you wish to upload, e.g. [`scan-1.dcm`, `scan-2.dcm`, ...].
+
+  The list of files could also point to locations in subfolders relative to the uploads directory, 
+  e.g. [`subfolder/scans/scan-1.dcm`, `scan-2.dcm`],
+  where `scan-1` has the path `uploads/subfolder/scans/scan-1.dcm` and `scan-2` has the path `uploads/scan-2.dcm`.
+
+  - `update_status(self, model_id: str, new_model_status: ModelStatus)`
+    This method is for internal use only, and is not be called by the trainer.
 
 ### Import FLIP and call methods
 - Import the module: `from flip import FLIP`

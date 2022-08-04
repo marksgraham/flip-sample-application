@@ -27,7 +27,7 @@ from datetime import datetime
 from nvflare.app_common.app_constant import AppConstants
 from nvflare.apis.fl_context import FLContext
 from nvflare.app_common.pt.pt_file_model_persistor import PTFileModelPersistor
-from utils.flip_constants import FlipConstants, ModelStatus
+from utils.flip_constants import ModelStatus
 from utils.utils import Utils
 from flip import FLIP
 
@@ -36,10 +36,10 @@ cwd = str(Path.cwd())  # Server dir
 
 class PersistToS3AndCleanup(FLComponent):
     def __init__(
-        self,
-        model_id: str,
-        persistor_id: str = AppConstants.DEFAULT_PERSISTOR_ID,
-        flip: FLIP = FLIP(),
+            self,
+            model_id: str,
+            persistor_id: str = AppConstants.DEFAULT_PERSISTOR_ID,
+            flip: FLIP = FLIP()
     ):
         """The component that is executed post training and is a part of the FLIP training model
 
@@ -49,6 +49,7 @@ class PersistToS3AndCleanup(FLComponent):
         Args:
             model_id (str): ID of the model that the training is being performed under.
             persistor_id (str, optional): ID of the persistor component. Defaults to "persistor".
+            flip (FLIP, optional): an instance of the FLIP module.
 
         Raises:
            ValueError:
@@ -62,7 +63,7 @@ class PersistToS3AndCleanup(FLComponent):
         self.persistor_id = persistor_id
         self.model_persistor = None
         self.model_inventory: dict = {}
-        
+
         self.flip = flip
 
         if Utils.is_valid_uuid(self.model_id) is False:

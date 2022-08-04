@@ -17,13 +17,13 @@ import requests
 
 from pathlib import Path
 from pandas import DataFrame
+from typing import List
 from utils.utils import Utils
 
 from utils.flip_constants import FlipConstants, ModelStatus
 
 
 class FLIP:
-
     def get_dataframe(self, project_id: str, query: str) -> DataFrame:
         """Calls the FLIP service to return a dataframe.
 
@@ -31,13 +31,18 @@ class FLIP:
             DataFrame: pandas dataframe
         """
 
-    def get_data(self, project_id: str, net_id: str) -> Path:
-        """Calls the FLIP service to return a filepath that contains images and labels downloaded from XNAT.
+    def get_by_accession_number(self, project_id: str, accession_id: str) -> Path:
+        """Calls the FLIP service to return a filepath that contains images downloaded from XNAT based
+           on the accession number
 
         Returns:
             Path: path to data
         """
 
+    def add_resource(self, project_id: str, accession_id: str, scan_id: str, resource_id: str, files: List[str]):
+        """Calls the FLIP service to upload image(s) to XNAT based on the accession number, scan ID, and resource ID
+        """
+
     def update_status(self, model_id: str, new_model_status: ModelStatus):
-        """Updates the Central Hub model status
+        """INTENDED FOR INTERNAL USE ONLY. NOT TO BE CALLED BY THE TRAINER.
         """
