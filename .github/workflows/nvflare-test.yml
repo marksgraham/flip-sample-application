@@ -26,9 +26,11 @@ jobs:
       - uses: actions/checkout@v3
       - name: Run NVFlare and Test
         run: |
-          cp ./flip-app /nvflare/poc/admin/transfer/flip-app -r
-          cp ./nvflare-poc-inacontainer/dummy_trainer.py /nvflare/poc/admin/transfer/flip-app/custom/trainer.py
-          cp ./nvflare-poc-inacontainer/dummy_validator.py /nvflare/poc/admin/transfer/flip-app/custom/validator.py
+          cp ./flip-app /nvflare/poc/admin/transfer/flip-app -r#
+          sed -i 's/download=True/download=False/' /nvflare/poc/admin/transfer/flip-app/custom/trainer.py
+          sed -i 's/root="~\/data"/root="\/root\/data"/' /nvflare/poc/admin/transfer/flip-app/custom/trainer.py
+          sed -i 's/root="~\/data"/root="\/root\/data"/' /nvflare/poc/admin/transfer/flip-app/custom/validator.py
+          sed -i 's/self.local_train(fl_ctx, torch_weights, abort_signal)/# self.local_train(fl_ctx, torch_weights, abort_signal)/' /nvflare/poc/admin/transfer/flip-app/custom/trainer.py
           cp ./nvflare-poc-inacontainer/test.py /nvflare/poc/admin/test.py
           cd /nvflare
           ./process.sh &
