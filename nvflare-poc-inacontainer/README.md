@@ -7,9 +7,9 @@ Copy any NVFlare to ``/apps`` directory, the dockerfile will copy applications i
 
 Use the docker build commands and run the container
 
-``docker build -t xnat-in-one ``
+``docker build . -t nvflare-in-one``
 
-``docker run xnat-in-one``
+``docker run nvflare-in-one``
 
 ### 2. Run Docker Container
 
