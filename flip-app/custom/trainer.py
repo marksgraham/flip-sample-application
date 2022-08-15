@@ -128,7 +128,7 @@ class FLIP_TRAINER(Executor):
                 self.optimizer.step()
 
                 running_loss += cost.cpu().detach().numpy() / images.size()[0]
-                self.flip.send_metrics_value(FlipMetricsLabel.LOSS_FUNCTION, running_loss / 3000)
+                self.flip.send_metrics_value(FlipMetricsLabel.LOSS_FUNCTION, running_loss / 3000, fl_ctx)
                 if i % 3000 == 0:
                     self.log_info(
                         fl_ctx,
