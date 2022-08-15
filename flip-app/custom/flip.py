@@ -80,5 +80,5 @@ class FLIP:
 
 
     def handle_metrics_event(self, event_data: Shareable, global_round: int, model_id: str):
-        """Use on the server to handle metrics data events raised by clients
+        """INTENDED FOR INTERNAL USE ONLY. NOT TO BE CALLED BY THE TRAINER.
         """
