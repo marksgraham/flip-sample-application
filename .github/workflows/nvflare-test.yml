@@ -27,6 +27,7 @@ jobs:
       - name: Run NVFlare and Test
         run: |
           cp ./flip-app /nvflare/poc/admin/transfer/flip-app -r
+          cat /nvflare/poc/admin/transfer/flip-app/custom/scatter_and_gather.py
           sed -i 's/download=True/download=False/' /nvflare/poc/admin/transfer/flip-app/custom/trainer.py
           sed -i 's/root="~\/data"/root="\/root\/data"/' /nvflare/poc/admin/transfer/flip-app/custom/trainer.py
           sed -i 's/root="~\/data"/root="\/root\/data"/' /nvflare/poc/admin/transfer/flip-app/custom/validator.py
