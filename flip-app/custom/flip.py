@@ -20,7 +20,12 @@ from pandas import DataFrame
 from typing import List
 from utils.utils import Utils
 
-from utils.flip_constants import FlipConstants, ModelStatus
+from utils.flip_constants import FlipEvents, ModelStatus
+
+from nvflare.apis.dxo import DXO, DataKind, from_shareable
+from nvflare.apis.fl_constant import FLContextKey, EventScope, FedEventHeader
+from nvflare.apis.fl_context import FLContext
+from nvflare.apis.shareable import Shareable
 
 
 class FLIP:
@@ -45,4 +50,35 @@ class FLIP:
 
     def update_status(self, model_id: str, new_model_status: ModelStatus):
         """INTENDED FOR INTERNAL USE ONLY. NOT TO BE CALLED BY THE TRAINER.
+        """
+
+    def send_metrics_value(self, label: str, value: float, fl_ctx: FLContext):
+        """Raises a federated event containing the passed in metrics data (label, value)
+        """
+        if not isinstance(label, str):
+            raise TypeError("expect label to be string, but got {}".format(type(label)))
+
+        if not isinstance(fl_ctx, FLContext):
+            raise TypeError("expect fl_ctx to be FLContext, but got {}".format(type(fl_ctx)))
+
+        engine = fl_ctx.get_engine()
+        if engine is None:
+            print("Error: no engine in fl_ctx, cannot fire metrics event")
+            return
+
+        dxo = DXO(data_kind=DataKind.METRICS, data={
+            'label': label,
+            'value': value
+        })
+        event_data = dxo.to_shareable()
+
+        fl_ctx.set_prop(FLContextKey.EVENT_DATA, event_data, private=True, sticky=False)
+        fl_ctx.set_prop(FLContextKey.EVENT_SCOPE, value=EventScope.FEDERATION, private=True, sticky=False)
+        fl_ctx.set_prop(FLContextKey.EVENT_ORIGIN, "flip_client", private=True, sticky=False)
+
+        engine.fire_event(FlipEvents.SEND_RESULT, fl_ctx)
+
+
+    def handle_metrics_event(self, event_data: Shareable, global_round: int, model_id: str):
+        """Use on the server to handle metrics data events raised by clients
         """
