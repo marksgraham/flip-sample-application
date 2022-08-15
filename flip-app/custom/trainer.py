@@ -128,7 +128,6 @@ class FLIP_TRAINER(Executor):
                 self.optimizer.step()
 
                 running_loss += cost.cpu().detach().numpy() / images.size()[0]
-                self.flip.send_metrics_value(FlipMetricsLabel.LOSS_FUNCTION, running_loss / 3000, fl_ctx)
                 if i % 3000 == 0:
                     self.log_info(
                         fl_ctx,
@@ -146,6 +145,7 @@ class FLIP_TRAINER(Executor):
     ) -> Shareable:
         try:
             if task_name == self._train_task_name:
+                self.flip.send_metrics_value(FlipMetricsLabel.LOSS_FUNCTION, 3000.0, fl_ctx)
                 # Get model weights
                 try:
                     dxo = from_shareable(shareable)
