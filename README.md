@@ -96,8 +96,17 @@ The following methods are available to be used in training, located in `flip.py`
   e.g. [`subfolder/scans/scan-1.dcm`, `scan-2.dcm`],
   where `scan-1` has the path `uploads/subfolder/scans/scan-1.dcm` and `scan-2` has the path `uploads/scan-2.dcm`.
 
-  - `update_status(self, model_id: str, new_model_status: ModelStatus)`
-    This method is for internal use only, and is not be called by the trainer.
+- `update_status(self, model_id: str, new_model_status: ModelStatus)`
+  This method is for internal use only, and is not be called by the trainer.
+
+- `send_metrics_value(self, label: str, value: float, fl_ctx: FLContext)`
+  This method raises an event which allows the sending of metrics data back to the central hub.
+  The FL Server workflow component listens for these events and populates the data with the current global round and
+  model id before storing.
+  The method has no return type. It supports the following required parameters:
+  - label (Any string is valid. The value will be stored against this label)
+  - value
+  Some constant values are provided under `FlipMetricsLabel` in `utils/flip_constants` but is not required to use these
 
 ### Import FLIP and call methods
 - Import the module: `from flip import FLIP`

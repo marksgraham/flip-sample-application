@@ -33,6 +33,7 @@ class FLIP_TRAINER(Executor):
         self._submit_model_task_name = submit_model_task_name
         self._exclude_vars = exclude_vars
         self._dataframe = FLIP.get_dataframe()
+        self._send_metrics = FLIP.send_metrics_value()
 
     def execute(
         self,
