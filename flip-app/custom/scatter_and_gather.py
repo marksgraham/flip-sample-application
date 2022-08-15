@@ -168,7 +168,6 @@ class ScatterAndGather(Controller):
         self._current_round = None
 
     def start_controller(self, fl_ctx: FLContext) -> None:
-        self.log_info(fl_ctx, "TEST LOG")
         self.log_info(fl_ctx, "Initializing ScatterAndGather workflow.")
         self._phase = AppConstants.PHASE_INIT
         engine = fl_ctx.get_engine()
