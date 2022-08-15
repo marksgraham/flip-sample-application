@@ -20,8 +20,7 @@ from utils.flip_constants import ModelStatus, FlipEvents
 from utils.utils import Utils
 
 from nvflare.apis.client import Client
-from nvflare.apis.fl_constant import ReturnCode, FLContextKey, FedEventHeader
-from nvflare.apis.dxo import from_shareable
+from nvflare.apis.fl_constant import ReturnCode
 from nvflare.apis.fl_context import FLContext
 from nvflare.apis.impl.controller import ClientTask, Controller, Task
 from nvflare.apis.shareable import Shareable
@@ -300,18 +299,6 @@ class ScatterAndGather(Controller):
                     group_name=self._name,
                     info={"phase": self._phase, "current_round": self._current_round, "num_rounds": self._num_rounds},
                 )
-
-        if event_type == FlipEvents.SEND_RESULT:
-            event_data = fl_ctx.get_prop(FLContextKey.EVENT_DATA, None)
-            if event_data is None:
-                self.log_error(fl_ctx, "Metrics Error: metrics result event was fired but no data found")
-                return
-
-            client_name = event_data.get_header(FedEventHeader.ORIGIN)
-            metrics_data = from_shareable(event_data).data
-
-            self.log_info(fl_ctx, f"Metrics event received from {client_name} | {metrics_data['label']} - {metrics_data['value']}")
-
 
     def _prepare_train_task_data(self, client_task: ClientTask, fl_ctx: FLContext) -> None:
         fl_ctx.set_prop(AppConstants.TRAIN_SHAREABLE, client_task.task.data, private=True, sticky=False)
