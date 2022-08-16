@@ -14,6 +14,7 @@
 
 import os.path
 from flip import FLIP
+from utils.flip_constants import FlipMetricsLabel
 
 import torch
 from torch import nn
@@ -144,6 +145,8 @@ class FLIP_TRAINER(Executor):
     ) -> Shareable:
         try:
             if task_name == self._train_task_name:
+                self.flip.send_metrics_value(FlipMetricsLabel.LOSS_FUNCTION, 3000.0, fl_ctx)
+
                 # Get model weights
                 try:
                     dxo = from_shareable(shareable)

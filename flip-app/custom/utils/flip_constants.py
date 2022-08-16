@@ -25,6 +25,7 @@ class FlipEvents(object):
     RESULTS_UPLOAD_STARTED = "_results_upload_started"
     RESULTS_UPLOAD_COMPLETED = "_results_upload_completed"
     ABORTED = "_aborted"
+    SEND_RESULT = "_send_result"
 
 
 class ModelStatus(str, Enum):
@@ -35,3 +36,9 @@ class ModelStatus(str, Enum):
     RESULTS_UPLOADED = "RESULTS_UPLOADED",
     ERROR = "ERROR",
     STOPPED = "STOPPED"
+
+
+class FlipMetricsLabel(str, Enum):
+    LOSS_FUNCTION = "LOSS_FUNCTION"
+    DL_RESULT = "DL_RESULT"
+    AVERAGE_SCORE = "AVERAGE_SCORE"
