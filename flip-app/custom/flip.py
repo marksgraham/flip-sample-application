@@ -56,10 +56,10 @@ class FLIP:
         """Raises a federated event containing the passed in metrics data (label, value)
         """
         if not isinstance(label, str):
-            raise TypeError("expect label to be string, but got {}".format(type(label)))
+            raise TypeError("Expect label to be string, but got {}".format(type(label)))
 
         if not isinstance(fl_ctx, FLContext):
-            raise TypeError("expect fl_ctx to be FLContext, but got {}".format(type(fl_ctx)))
+            raise TypeError("Expect fl_ctx to be FLContext, but got {}".format(type(fl_ctx)))
 
         engine = fl_ctx.get_engine()
         if engine is None:
