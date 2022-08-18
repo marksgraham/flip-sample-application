@@ -12,6 +12,7 @@
 
 import ast
 import json
+import logging
 import os
 import requests
 
@@ -29,6 +30,11 @@ from nvflare.apis.shareable import Shareable
 
 
 class FLIP:
+    def __init__(self):
+        self._name = self.__class__.__name__
+        self.logger = logging.getLogger(self._name)
+
+
     def get_dataframe(self, project_id: str, query: str) -> DataFrame:
         """Calls the FLIP service to return a dataframe.
 
@@ -63,8 +69,10 @@ class FLIP:
 
         engine = fl_ctx.get_engine()
         if engine is None:
-            print("Error: no engine in fl_ctx, cannot fire metrics event")
+            self.logger.error("Error: no engine in fl_ctx, cannot fire metrics event")
             return
+
+        self.logger.info("Attempting to fire metrics event...")
 
         dxo = DXO(data_kind=DataKind.METRICS, data={
             'label': label,
@@ -77,6 +85,8 @@ class FLIP:
         fl_ctx.set_prop(FLContextKey.EVENT_ORIGIN, "flip_client", private=True, sticky=False)
 
         engine.fire_event(FlipEvents.SEND_RESULT, fl_ctx)
+
+        self.logger.info("Successfully fired metrics event")
 
 
     def handle_metrics_event(self, event_data: Shareable, global_round: int, model_id: str):
