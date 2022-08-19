@@ -16,7 +16,7 @@ import os
 
 class FlipConstants(object):
     CLEANUP: str = "cleanup"
-    MIN_CLIENTS: int = 2
+    MIN_CLIENTS: int = 1
     INIT_TRAINING: str = "init_training"
 
 
