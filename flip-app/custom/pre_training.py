@@ -39,7 +39,7 @@ class InitTraining(Controller):
 
         Args:
             model_id (str): ID of the model that the training is being performed under.
-            min_clients (int, optional): Minimum number of clients. Defaults to 2 for the aggregation to take place with
+            min_clients (int, optional): Minimum number of clients. Defaults to 1 for the aggregation to take place with
                 successful results.
             task_name (str, optional): Name of the task. Defaults to "init_training".
             flip (FLIP, optional): an instance of the FLIP module.
@@ -47,7 +47,7 @@ class InitTraining(Controller):
         Raises:
            ValueError:
             - when the model ID is not a valid UUID.
-            - when the minimum number of clients specified is less than 2
+            - when the minimum number of clients specified is less than 1
         """
 
         super().__init__()

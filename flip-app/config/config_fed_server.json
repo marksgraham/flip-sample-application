@@ -1,7 +1,7 @@
 {
   "format_version": 2,
   "global_rounds": 1,
-  "min_clients": 2,
+  "min_clients": 1,
   "model_id": "6fe7b28a-6138-4f4d-afa0-ec367266ac52",
   "server": {
     "heart_beat_timeout": 600
