@@ -16,7 +16,7 @@ jobs:
   test:
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/answerconsulting/nvflare-build-ci:2.0.16
+      image: ghcr.io/answerconsulting/nvflare-build-ci:2.0.16-2
       credentials:
         username: robg-answer
         password: ${{ secrets.GHCR_TOKEN }}
