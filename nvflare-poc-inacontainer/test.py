@@ -27,8 +27,8 @@ def wrapper(api_command_result):
 
 
 def has_error():
-    result_trust_a = wrapper(api.cat_target(target="TRUST-A", file="log.txt"))
-    result_trust_b = wrapper(api.cat_target(target="TRUST-A", file="log.txt"))
+    result_trust_a = wrapper(api.cat_target(target="site-1", file="log.txt"))
+    result_trust_b = wrapper(api.cat_target(target="site-2", file="log.txt"))
     result_server = wrapper(api.cat_target(target="server", file="log.txt"))
 
     matches = ["ERROR", "ConfigError"]

@@ -44,10 +44,10 @@ jobs:
       - name: Archive Trust A Logs
         uses: actions/upload-artifact@v3
         with:
-          name: trust-a-logs
+          name: site-1-logs
           path: /nvflare/poc/site-1/log.txt
       - name: Archive Trust B Logs
         uses: actions/upload-artifact@v3
         with:
-          name: trust-b-logs
+          name: site-2-logs
           path: /nvflare/poc/site-2/log.txt
