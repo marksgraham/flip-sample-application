@@ -11,9 +11,9 @@ COPY cifar-10-batches-py /root/data/cifar-10-batches-py
 
 WORKDIR /nvflare/
 RUN git clone https://github.com/NVIDIA/NVFlare.git
-COPY start_nvflare_components.sh process.sh
+COPY start_nvflare_components.sh start_nvflare_components.sh
 
-RUN dos2unix ./process.sh
+RUN dos2unix ./start_nvflare_components.sh
 
 RUN yes | poc -n 2
 
@@ -25,5 +25,5 @@ ENV PATH="${PATH}:/nvflare/poc/admin/startup"
 WORKDIR /nvflare/
 
 
-RUN chmod 777 ./process.sh
-CMD ["./process.sh"]
+RUN chmod 777 ./start_nvflare_components.sh
+CMD ["./start_nvflare_components.sh"]
