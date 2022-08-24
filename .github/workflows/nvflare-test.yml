@@ -33,8 +33,7 @@ jobs:
           sed -i 's/self.local_train(fl_ctx, torch_weights, abort_signal)/# self.local_train(fl_ctx, torch_weights, abort_signal)/' /nvflare/poc/admin/transfer/flip-app/custom/trainer.py
           cp ./nvflare-poc-inacontainer/test.py /nvflare/poc/admin/test.py
           cd /nvflare
-          cat ./process.sh
-          ./process.sh &
+          ./start_nvflare_components.sh &
           cd /nvflare/poc/admin
           python3 /nvflare/poc/admin/test.py
       - name: Archive Server Logs
