@@ -6,7 +6,6 @@ from nvflare.apis.shareable import Shareable, make_reply
 from nvflare.apis.signal import Signal
 from nvflare.app_common.app_constant import AppConstants
 
-
 class FLIP_TRAINER(Executor):
     def __init__(
         self,
@@ -15,6 +14,8 @@ class FLIP_TRAINER(Executor):
         train_task_name=AppConstants.TASK_TRAIN,
         submit_model_task_name=AppConstants.TASK_SUBMIT_MODEL,
         exclude_vars=None,
+        project_id="",
+        query=""
     ):
         """A blank trainer that will handle a "train" task and a "submit_model" task.
 
@@ -26,14 +27,12 @@ class FLIP_TRAINER(Executor):
             exclude_vars (list): List of variables to exclude during model loading.
         """
         super(FLIP_TRAINER, self).__init__()
-
+        self.flip = FLIP()
         self._lr = lr
         self._epochs = epochs
         self._train_task_name = train_task_name
         self._submit_model_task_name = submit_model_task_name
         self._exclude_vars = exclude_vars
-        self._dataframe = FLIP.get_dataframe()
-        self._send_metrics = FLIP.send_metrics_value()
 
     def execute(
         self,
