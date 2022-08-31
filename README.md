@@ -157,3 +157,10 @@ with open(config_file) as file:
 
 NOTE: As the sample application is a proof of concept, updating the global and local rounds in 
 the config file will not dynamically update the global and local round values.
+
+## Note for server config
+In the file `config_fed_client.json` under the Cross Site Validation workflow, a parameter named
+`participating_clients` is passed in with the values `site-1` and `site-2` in a list. This may need
+modifying depending on what clients you perform the training at locally. For example, if you only run
+the training at `site-1`, then the list should should reflect that. Failure to do so could end up in a
+loop where the server is waiting for `site-2`'s response.

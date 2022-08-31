@@ -85,7 +85,8 @@
       "id": "cross_site_validate",
       "name": "CrossSiteModelEval",
       "args": {
-        "model_locator_id": "model_locator"
+        "model_locator_id": "model_locator",
+        "participating_clients": ["site-1", "site-2"]
       }
     }
   ]
