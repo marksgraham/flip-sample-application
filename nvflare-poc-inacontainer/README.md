@@ -20,3 +20,4 @@ This will give you access to all the NVFlare Admin commands
 ``docker exec -it <name> bash``
 ``docker logs <name>``
 
+The username and password for this container are ``admin``
