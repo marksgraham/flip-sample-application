@@ -5,7 +5,7 @@ name: NVFlare Test
 
 on:
   push:
-    branches: [ "main", "develop" ]
+    branches: [ "main", "develop", "FLIP-AddImportsBackIn" ]
   pull_request:
     branches: [ "main", "develop" ]
 
