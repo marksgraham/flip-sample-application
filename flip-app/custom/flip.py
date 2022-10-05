@@ -28,6 +28,7 @@ from nvflare.apis.fl_constant import FLContextKey, EventScope
 from nvflare.apis.fl_context import FLContext
 from nvflare.apis.shareable import Shareable
 
+
 class FLIP:
     def __init__(self):
         self._name = self.__class__.__name__
