@@ -35,3 +35,8 @@ class ModelStatus(str, Enum):
     RESULTS_UPLOADED = "RESULTS_UPLOADED",
     ERROR = "ERROR",
     STOPPED = "STOPPED"
+
+class FlipMetricsLabel(str, Enum):
+    LOSS_FUNCTION = "LOSS_FUNCTION"
+    DL_RESULT = "DL_RESULT"
+    AVERAGE_SCORE = "AVERAGE_SCORE"
