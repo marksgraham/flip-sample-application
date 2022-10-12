@@ -1,0 +1,15 @@
+{
+	"GLOBAL_ROUNDS": 1,
+	"LOCAL_ROUNDS": 1,
+	"ROUND_HALF_UP": true,
+	"LOSS_FUNCTION_START_VALUE": 1.0,
+	"DAYS_OF_WEEK": [
+		"mon",
+		"tue",
+		"wed",
+		"thu",
+		"fri",
+		"sat",
+		"sun"
+	]
+}
