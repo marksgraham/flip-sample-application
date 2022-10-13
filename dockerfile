@@ -4,8 +4,9 @@ RUN python3 -m pip install -U pip
 RUN python3 -m pip install -U setuptools
 
 COPY ./requirements.txt ./
-
 RUN pip install -r ./requirements.txt
+
+RUN python3 -c "import torchvision;torchvision.datasets.CIFAR10(root='/root/data/', download=True)"
 RUN apt-get update && apt-get install -y dos2unix
 
 WORKDIR /nvflare/
