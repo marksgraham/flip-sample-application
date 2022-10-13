@@ -36,7 +36,7 @@ If you exec into the container
 
 You will be able to run ``fl-admin.sh``
 The username and password for this container are ``admin``
-This will grant you access to all the [NVFlare Admin commands](#3 Administration Console)
+This will grant you access to all the NVFlare Admin commands.
 
 The logs for the model execution are written to STDOUT and can be accessible
 _by viewing the logs of the container_
