@@ -31,7 +31,7 @@ jobs:
           sed -i 's/root="~\/data"/root="\/root\/data"/' /nvflare/poc/admin/transfer/flip-app/custom/trainer.py
           sed -i 's/root="~\/data"/root="\/root\/data"/' /nvflare/poc/admin/transfer/flip-app/custom/validator.py
           sed -i 's/self.local_train(fl_ctx, torch_weights, abort_signal)/# self.local_train(fl_ctx, torch_weights, abort_signal)/' /nvflare/poc/admin/transfer/flip-app/custom/trainer.py
-          cp ./nvflare-poc-inacontainer/test.py /nvflare/poc/admin/test.py
+          cp ./docker/test.py /nvflare/poc/admin/test.py
           cd /nvflare
           ./start_nvflare_components.sh &
           cd /nvflare/poc/admin
