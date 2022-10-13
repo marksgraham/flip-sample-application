@@ -29,10 +29,11 @@ Follow the [Installation](https://nvflare.readthedocs.io/en/2.0/installation.htm
 
 Install additional requirements:
 
+There is a requirements.txt file provided in this repo with the python packages
+that have been installed additionally to the packages included by default with a NVFlare installation
+
 ```bash
-pip install torch
-pip install protobuf==3.20
-pip install pandas
+pip install -r requirements.txt
 ```
 
 ### 2. Set up your FL workspace

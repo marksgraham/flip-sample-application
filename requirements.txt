@@ -1,0 +1,3 @@
+torch
+protobuf==3.20
+pandas
