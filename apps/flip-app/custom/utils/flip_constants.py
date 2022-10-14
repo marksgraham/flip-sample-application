@@ -25,6 +25,7 @@ class FlipEvents(object):
     RESULTS_UPLOAD_STARTED = "_results_upload_started"
     RESULTS_UPLOAD_COMPLETED = "_results_upload_completed"
     ABORTED = "_aborted"
+    SEND_RESULT = "_send_result"
 
 
 class ModelStatus(str, Enum):
