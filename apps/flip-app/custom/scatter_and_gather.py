@@ -11,15 +11,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 import traceback
 
-from nvflare.apis.event_type import EventType
-
-from flip import FLIP
-from utils.flip_constants import ModelStatus, FlipEvents
-from utils.utils import Utils
-
 from nvflare.apis.client import Client
+from nvflare.apis.event_type import EventType
 from nvflare.apis.fl_constant import ReturnCode
 from nvflare.apis.fl_context import FLContext
 from nvflare.apis.impl.controller import ClientTask, Controller, Task
@@ -31,6 +27,10 @@ from nvflare.app_common.abstract.shareable_generator import ShareableGenerator
 from nvflare.app_common.app_constant import AppConstants
 from nvflare.app_common.app_event_type import AppEventType
 from nvflare.widgets.info_collector import GroupInfoCollector, InfoCollector
+
+from flip import FLIP
+from utils.flip_constants import ModelStatus, FlipEvents
+from utils.utils import Utils
 
 
 class ScatterAndGather(Controller):

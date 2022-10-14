@@ -10,26 +10,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import traceback
 from pathlib import Path
 
 from nvflare.apis.fl_component import FLComponent
-
-from utils.flip_constants import FlipEvents
-
-from pt_constants import PTConstants
-
-import traceback
-import os
-import shutil
-
-from datetime import datetime
-
-from nvflare.app_common.app_constant import AppConstants
 from nvflare.apis.fl_context import FLContext
-from nvflare.app_common.pt.pt_file_model_persistor import PTFileModelPersistor
+from nvflare.app_common.app_constant import AppConstants
+
+from flip import FLIP
 from utils.flip_constants import ModelStatus
 from utils.utils import Utils
-from flip import FLIP
 
 cwd = str(Path.cwd())  # Server dir
 

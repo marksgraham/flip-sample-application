@@ -13,30 +13,27 @@
 # limitations under the License.
 
 import os.path
-from flip import FLIP
-from utils.flip_constants import FlipMetricsLabel
 
 import torch
-from torch import nn
-from torch.optim import SGD
-from torch.utils.data.dataloader import DataLoader
-from torchvision.datasets import CIFAR10
-from torchvision.transforms import ToTensor, Normalize, Compose
-
 from nvflare.apis.dxo import from_shareable, DXO, DataKind, MetaKey
 from nvflare.apis.executor import Executor
 from nvflare.apis.fl_constant import ReturnCode, ReservedKey
 from nvflare.apis.fl_context import FLContext
 from nvflare.apis.shareable import Shareable, make_reply
 from nvflare.apis.signal import Signal
-from nvflare.app_common.abstract.model import (
-    make_model_learnable,
-    model_learnable_to_dxo,
-)
+from nvflare.app_common.abstract.model import make_model_learnable, model_learnable_to_dxo
 from nvflare.app_common.app_constant import AppConstants
 from nvflare.app_common.pt.pt_fed_utils import PTModelPersistenceFormatManager
+from torch import nn
+from torch.optim import SGD
+from torch.utils.data.dataloader import DataLoader
+from torchvision.datasets import CIFAR10
+from torchvision.transforms import ToTensor, Normalize, Compose
+
+from flip import FLIP
 from pt_constants import PTConstants
 from simple_network import SimpleNetwork
+from utils.flip_constants import FlipMetricsLabel
 
 
 class FLIP_TRAINER(Executor):

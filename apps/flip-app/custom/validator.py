@@ -13,10 +13,6 @@
 # limitations under the License.
 
 import torch
-from torch.utils.data import DataLoader
-from torchvision.datasets import CIFAR10
-from torchvision.transforms import Compose, ToTensor, Normalize
-
 from nvflare.apis.dxo import from_shareable, DataKind, DXO
 from nvflare.apis.executor import Executor
 from nvflare.apis.fl_constant import ReturnCode
@@ -24,6 +20,10 @@ from nvflare.apis.fl_context import FLContext
 from nvflare.apis.shareable import Shareable, make_reply
 from nvflare.apis.signal import Signal
 from nvflare.app_common.app_constant import AppConstants
+from torch.utils.data import DataLoader
+from torchvision.datasets import CIFAR10
+from torchvision.transforms import Compose, ToTensor, Normalize
+
 from simple_network import SimpleNetwork
 
 

@@ -16,12 +16,12 @@ import os
 from typing import List, Union
 
 import torch.cuda
-
 from nvflare.apis.dxo import DXO
 from nvflare.apis.fl_context import FLContext
 from nvflare.app_common.abstract.model import model_learnable_to_dxo
 from nvflare.app_common.abstract.model_locator import ModelLocator
 from nvflare.app_common.pt.pt_fed_utils import PTModelPersistenceFormatManager
+
 from pt_constants import PTConstants
 from simple_network import SimpleNetwork
 
@@ -74,7 +74,7 @@ class PTModelLocator(ModelLocator):
         else:
             self.log_error(
                 fl_ctx,
-                f"PTModelLocator doesn't recognize name: {model_name}", 
+                f"PTModelLocator doesn't recognize name: {model_name}",
                 fire_event=False
             )
             return None

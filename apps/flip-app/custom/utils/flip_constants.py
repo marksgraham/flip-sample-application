@@ -11,7 +11,6 @@
 # limitations under the License.
 
 from enum import Enum
-import os
 
 
 class FlipConstants(object):
@@ -36,6 +35,7 @@ class ModelStatus(str, Enum):
     RESULTS_UPLOADED = "RESULTS_UPLOADED",
     ERROR = "ERROR",
     STOPPED = "STOPPED"
+
 
 class FlipMetricsLabel(str, Enum):
     LOSS_FUNCTION = "LOSS_FUNCTION"

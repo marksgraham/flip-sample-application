@@ -10,13 +10,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
-import shutil
-
 from nvflare.apis.fl_component import FLComponent
 from nvflare.apis.fl_context import FLContext
-
-from utils.flip_constants import FlipConstants
 
 
 class CleanupImages(FLComponent):

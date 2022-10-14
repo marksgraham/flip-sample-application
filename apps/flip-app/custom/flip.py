@@ -10,30 +10,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import ast
-import json
 import logging
-import os
-import requests
-
 from pathlib import Path
-from pandas import DataFrame
 from typing import List
-from utils.utils import Utils
-
-from utils.flip_constants import FlipConstants, ModelStatus
 
 from nvflare.apis.dxo import DXO, DataKind
 from nvflare.apis.fl_constant import FLContextKey, EventScope
 from nvflare.apis.fl_context import FLContext
 from nvflare.apis.shareable import Shareable
+from pandas import DataFrame
+
+from utils.flip_constants import ModelStatus
 
 
 class FLIP:
     def __init__(self):
         self._name = self.__class__.__name__
         self.logger = logging.getLogger(self._name)
-
 
     def get_dataframe(self, project_id: str, query: str) -> DataFrame:
         """Calls the FLIP service to return a dataframe.
@@ -87,7 +80,6 @@ class FLIP:
         engine.fire_event(FlipEvents.SEND_RESULT, fl_ctx)
 
         self.logger.info("Successfully fired metrics event")
-
 
     def handle_metrics_event(self, event_data: Shareable, global_round: int, model_id: str):
         """INTENDED FOR INTERNAL USE ONLY. NOT TO BE CALLED BY THE TRAINER.

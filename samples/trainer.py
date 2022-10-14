@@ -6,6 +6,7 @@ from nvflare.apis.shareable import Shareable, make_reply
 from nvflare.apis.signal import Signal
 from nvflare.app_common.app_constant import AppConstants
 
+
 class FLIP_TRAINER(Executor):
     def __init__(
         self,
