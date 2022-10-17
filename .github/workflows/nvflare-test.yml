@@ -15,8 +15,9 @@ permissions:
 jobs:
   test:
     runs-on: ubuntu-latest
-    container:
-      image: ghcr.io/answerconsulting/nvflare-build-ci:2.0.16
+    runs:
+      using: 'docker'
+      image: 'Dockerfile'
 
     steps:
       - uses: actions/checkout@v3
