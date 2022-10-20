@@ -1,34 +1,26 @@
 FROM python:3.8.10
 
-RUN python3 -m pip install -U pip
-RUN python3 -m pip install -U setuptools
+RUN apt-get update && apt-get install -y dos2unix
 
+RUN pip install -U pip
 COPY ./requirements.txt ./
 RUN pip install -r ./requirements.txt
 
 RUN python3 -c "import torchvision;torchvision.datasets.CIFAR10(root='/root/data/', download=True)"
-RUN apt-get update && apt-get install -y dos2unix
 
 WORKDIR /nvflare/
-RUN git clone https://github.com/NVIDIA/NVFlare.git
+RUN yes | poc -n 2 \
+  && mkdir -p poc/admin/transfer
 
-WORKDIR /nvflare/NVFlare
-RUN git checkout 2.0
+COPY ./apps/ /nvflare/poc/admin/transfer/
+COPY ./utils/test.py /nvflare/poc/admin/
 
-WORKDIR /nvflare/
-COPY ./utils/start_nvflare_components.sh start_nvflare_components.sh
+COPY ./utils/start_nvflare_components.sh /nvflare/
 
-RUN dos2unix ./start_nvflare_components.sh
-
-RUN yes | poc -n 2
-
-WORKDIR /nvflare/poc/admin/
-COPY apps transfer/
-COPY ./utils/test.py ./
+# Fix the Docker issue with line endings from .sh files when running it on Windows
+# from https://github.com/docker/for-win/issues/1340
+RUN dos2unix /nvflare/start_nvflare_components.sh
+RUN chmod 777 /nvflare/start_nvflare_components.sh
 
 ENV PATH="${PATH}:/nvflare/poc/admin/startup"
-
-WORKDIR /nvflare/
-
-RUN chmod 777 ./start_nvflare_components.sh
 CMD ["./start_nvflare_components.sh"]
