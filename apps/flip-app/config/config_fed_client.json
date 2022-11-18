@@ -26,7 +26,10 @@
       ],
       "executor": {
         "path": "validator.FLIP_VALIDATOR",
-        "args": {}
+        "args": {
+          "project_id": "{project_id}",
+          "query": "{query}"
+        }
       }
     }
   ],

@@ -26,6 +26,8 @@ class FLIP_TRAINER(Executor):
             train_task_name (str, optional): Task name for train task. Defaults to "train".
             submit_model_task_name (str, optional): Task name for submit model. Defaults to "submit_model".
             exclude_vars (list): List of variables to exclude during model loading.
+            project_id (str, optional): The ID of the project the model belongs to.
+            query (str, optional): The cohort query that is associated with the project.
         """
         super(FLIP_TRAINER, self).__init__()
         self.flip = FLIP()
@@ -34,6 +36,8 @@ class FLIP_TRAINER(Executor):
         self._train_task_name = train_task_name
         self._submit_model_task_name = submit_model_task_name
         self._exclude_vars = exclude_vars
+        self._project_id = project_id
+        self._query = query
 
     def execute(
         self,

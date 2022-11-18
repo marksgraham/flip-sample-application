@@ -28,10 +28,23 @@ from simple_network import SimpleNetwork
 
 
 class FLIP_VALIDATOR(Executor):
-    def __init__(self, validate_task_name=AppConstants.TASK_VALIDATION):
-        super(FLIP_VALIDATOR, self).__init__()
+    def __init__(
+        self, 
+        validate_task_name=AppConstants.TASK_VALIDATION,
+        project_id="",
+        query=""
+    ):
+        """A validator that will handle a "validate" task.
 
+        Args:
+            validate_task_name (str, optional): Task name for validate. Defaults to "validate".
+            project_id (str, optional): The ID of the project the model belongs to.
+            query (str, optional): The cohort query that is associated with the project.
+        """
+        super(FLIP_VALIDATOR, self).__init__()
         self._validate_task_name = validate_task_name
+        self._project_id = project_id
+        self._query = query
 
         # Setup the model
         self.model = SimpleNetwork()
