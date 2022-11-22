@@ -11,6 +11,9 @@
 # limitations under the License.
 
 import logging
+import json
+import ast
+import os.path
 from pathlib import Path
 from typing import List
 
@@ -20,7 +23,7 @@ from nvflare.apis.fl_context import FLContext
 from nvflare.apis.shareable import Shareable
 from pandas import DataFrame
 
-from utils.flip_constants import FlipEvents, FlipConstants, ModelStatus
+from utils.flip_constants import FlipEvents, ModelStatus
 
 
 class FLIP:
@@ -29,11 +32,31 @@ class FLIP:
         self.logger = logging.getLogger(self._name)
 
     def get_dataframe(self, project_id: str, query: str) -> DataFrame:
-        """Calls the FLIP service to return a dataframe.
+        """In production, this method calls the FLIP service to return a dataframe. Within this sample app,
+        a static sample response is provided instead.
 
         Returns:
             DataFrame: pandas dataframe
         """
+
+        script_path = os.path.realpath(os.path.dirname(__file__))
+        sample_json_filepath = os.path.join(script_path, "sample_get_dataframe_response.json")
+
+        self.logger.info(f"Retrieving sample dataframe from {sample_json_filepath}")
+
+        if not os.path.isfile(sample_json_filepath):
+            self.logger.error("No sample dataframe json file could be found!")
+            raise FileNotFoundError(sample_json_filepath);
+
+        with open(sample_json_filepath) as outfile:
+            response = json.load(outfile)
+
+            df = DataFrame(data=response)
+
+            self.logger.info("Successfully parsed sample dataframe")
+
+            return df
+
 
     def get_by_accession_number(self, project_id: str, accession_id: str) -> Path:
         """Calls the FLIP service to return a filepath that contains images downloaded from XNAT based

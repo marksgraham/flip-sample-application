@@ -142,6 +142,7 @@ class FLIP_TRAINER(Executor):
     ) -> Shareable:
         try:
             if task_name == self._train_task_name:
+                dataframe = self.flip.get_dataframe(self.project_id, self.query)
                 self.flip.send_metrics_value(FlipMetricsLabel.LOSS_FUNCTION, 3000.0, fl_ctx)
 
                 # Get model weights
