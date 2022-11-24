@@ -65,6 +65,7 @@ class FLIP:
         Returns:
             Path: path to data
         """
+        return Path('/data/accession-resources') / accession_id
 
     def add_resource(self, project_id: str, accession_id: str, scan_id: str, resource_id: str, files: List[str]):
         """Calls the FLIP service to upload image(s) to XNAT based on the accession number, scan ID, and resource ID
