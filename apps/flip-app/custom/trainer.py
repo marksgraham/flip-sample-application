@@ -42,6 +42,7 @@ from nvflare.app_common.pt.pt_fed_utils import PTModelPersistenceFormatManager
 from pt_constants import PTConstants
 from simple_network import SimpleNetwork
 import numpy as np
+import nibabel as nib
 
 class FLIP_TRAINER(Executor):
     def __init__(
@@ -85,10 +86,10 @@ class FLIP_TRAINER(Executor):
             [LoadImageD(keys=['img', 'seg'], reader='NiBabelReader', as_closest_canonical=False),
              AddChannelD(keys=['img', 'seg']),
              AddCoordinateChannelsD(keys=['img'], spatial_dims=(0, 1, 2)),
-             Rand3DElasticD(keys=['img', 'seg'], sigma_range=(1, 3), magnitude_range=(-10, 10), prob=0.5,
-                            mode=('bilinear', 'nearest'),
-                            rotate_range=(-0.34, 0.34),
-                            scale_range=(-0.1, 0.1), spatial_size=None),
+             # Rand3DElasticD(keys=['img', 'seg'], sigma_range=(1, 3), magnitude_range=(-10, 10), prob=0.5,
+             #                mode=('bilinear', 'nearest'),
+             #                rotate_range=(-0.34, 0.34),
+             #                scale_range=(-0.1, 0.1), spatial_size=None),
              SplitChannelD(keys=['img']),
              ScaleIntensityRangeD(keys=['img_0'], a_min=-15, a_max=100, b_min=-1, b_max=1, clip=True),
              ConcatItemsD(keys=['img_0', 'img_1', 'img_2', 'img_3'], name='img'),
@@ -114,7 +115,7 @@ class FLIP_TRAINER(Executor):
         self.project_id = project_id
         self.query = query
 
-    def get_image_and_label_list(self, dataframe, val_split=0.1):
+    def get_image_and_label_list(self, dataframe, val_split=0.2):
         '''Returns a list of dicts, each dict containing the path to an image and its corresponding label.
         '''
         # split into the training and testing data
@@ -125,21 +126,25 @@ class FLIP_TRAINER(Executor):
             try:
                 accession_folder_path = self.flip.get_by_accession_number(self.project_id, accession_id)
                 # search for all .nii in the folder and check to see if they have a corresponding label
-                all_images = accession_folder_path.rglob('*.nii*')
+                all_images = list(Path(accession_folder_path).rglob('*.nii*'))
                 for image in all_images:
-                    stem = str(image.stem).replace('.gz','').replace('.nii','')
-                    # after data enrichment the segmentation will be named something like filepath_label like this
-                    #label_path = accession_folder_path / f'{stem}_label.nii'
-                    # we aren't doing data enrichment so we'll just set the label to the image here
-                    label_path = image
-                    if label_path.exists():
-                        image_and_label_files.append(
-                            {'img': str(image),
-                            'seg': str(label_path)})
-                    else:
-                        num_unpaired += 1
+                    # check images are 3D
+                    header = nib.load(str(image))
+                    num_dim = len(header.shape)
+                    if num_dim == 3:
+                        stem = str(image.stem).replace('.gz','').replace('.nii','')
+                        # after data enrichment the segmentation will be named something like filepath_label like this
+                        #label_path = accession_folder_path / f'{stem}_label.nii'
+                        # we aren't doing data enrichment so we'll just set the label to the image here
+                        label_path = image
+                        if label_path.exists():
+                            image_and_label_files.append(
+                                {'img': str(image),
+                                 'seg': str(label_path)})
+                        else:
+                            num_unpaired += 1
             except:
-                pass            
+                pass
         print(f'Found {len(image_and_label_files)} files in train')
         return image_and_label_files    
 
@@ -149,12 +154,11 @@ class FLIP_TRAINER(Executor):
 
         # Basic training
         self.model.train()
-
-
         for epoch in range(self._epochs):
             running_loss = 0.0
             num_images = 0
             for i, batch in enumerate(self._train_loader):
+
                 if abort_signal.triggered:
                     # If abort_signal is triggered, we simply return.
                     # The outside function will check it again and decide steps to take.

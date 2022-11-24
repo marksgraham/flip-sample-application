@@ -37,7 +37,7 @@ from nvflare.apis.shareable import Shareable, make_reply
 from nvflare.apis.signal import Signal
 from nvflare.app_common.app_constant import AppConstants
 from simple_network import SimpleNetwork
-
+import nibabel as nib
 
 class FLIP_VALIDATOR(Executor):
     def __init__(self,         validate_task_name=AppConstants.TASK_VALIDATION,
@@ -76,7 +76,7 @@ class FLIP_VALIDATOR(Executor):
         self.query = query
         self.dataframe = self.flip.get_dataframe(self.project_id, self.query)
 
-    def get_image_and_label_list(self, dataframe, val_split=0.1):
+    def get_image_and_label_list(self, dataframe, val_split=0.2):
             '''Returns a list of dicts, each dict containing the path to an image and its corresponding label.
             '''
             # split into the training and testing data
@@ -87,21 +87,25 @@ class FLIP_VALIDATOR(Executor):
                 try:
                     accession_folder_path = self.flip.get_by_accession_number(self.project_id, accession_id)
                     # search for all .nii in the folder and check to see if they have a corresponding label
-                    all_images = accession_folder_path.rglob('*.nii*')
+                    all_images = list(Path(accession_folder_path).rglob('*.nii*'))
                     for image in all_images:
-                        stem = str(image.stem).replace('.gz','').replace('.nii','') 
-                        # after data enrichment the segmentation will be named something like filepath_label like this
-                        #label_path = accession_folder_path / f'{stem}_label.nii'
-                        # we aren't doing data enrichment so we'll just set the label to the image here
-                        label_path = image
-                        if label_path.exists():
-                            image_and_label_files.append(
-                                {'img': str(image),
-                                'seg': str(label_path)})
-                        else:
-                            num_unpaired += 1
+                        # check images are 3D
+                        header = nib.load(str(image))
+                        num_dim = len(header.shape)
+                        if num_dim == 3:
+                            stem = str(image.stem).replace('.gz', '').replace('.nii', '')
+                            # after data enrichment the segmentation will be named something like filepath_label like this
+                            # label_path = accession_folder_path / f'{stem}_label.nii'
+                            # we aren't doing data enrichment so we'll just set the label to the image here
+                            label_path = image
+                            if label_path.exists():
+                                image_and_label_files.append(
+                                    {'img': str(image),
+                                     'seg': str(label_path)})
+                            else:
+                                num_unpaired += 1
                 except:
-                    pass   
+                    pass
             print(f'Found {len(image_and_label_files)} files in val')
             return image_and_label_files
 
