@@ -1,4 +1,5 @@
-FROM python:3.8.10
+#FROM python:3.8.10
+FROM nvcr.io/nvidia/pytorch:21.05-py3
 
 RUN apt-get update && apt-get install -y dos2unix
 
