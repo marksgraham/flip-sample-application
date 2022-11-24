@@ -12,7 +12,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from pathlib import Path
+from flip import FLIP
+
+import numpy as np
 import torch
+from torch import nn
+from torch.optim import SGD, Adam
+
+from monai.networks.nets import BasicUNet
+from monai.losses import DiceLoss
+from monai.transforms import (Compose, LoadImageD, AddChannelD, AddCoordinateChannelsD, Rand3DElasticD, SplitChannelD,
+                              DeleteItemsD, ScaleIntensityRangeD, ConcatItemsD, RandSpatialCropD, ToTensorD,
+                              CastToTypeD)
+from monai.data import Dataset, DataLoader
+from monai.inferers import sliding_window_inference
+from monai.metrics import compute_meandice
+
 from nvflare.apis.dxo import from_shareable, DataKind, DXO
 from nvflare.apis.executor import Executor
 from nvflare.apis.fl_constant import ReturnCode
@@ -20,31 +36,16 @@ from nvflare.apis.fl_context import FLContext
 from nvflare.apis.shareable import Shareable, make_reply
 from nvflare.apis.signal import Signal
 from nvflare.app_common.app_constant import AppConstants
-from torch.utils.data import DataLoader
-from torchvision.datasets import CIFAR10
-from torchvision.transforms import Compose, ToTensor, Normalize
-
 from simple_network import SimpleNetwork
 
 
 class FLIP_VALIDATOR(Executor):
-    def __init__(
-        self, 
-        validate_task_name=AppConstants.TASK_VALIDATION,
+    def __init__(self,         validate_task_name=AppConstants.TASK_VALIDATION,
         project_id="",
-        query=""
-    ):
-        """A validator that will handle a "validate" task.
-
-        Args:
-            validate_task_name (str, optional): Task name for validate. Defaults to "validate".
-            project_id (str, optional): The ID of the project the model belongs to.
-            query (str, optional): The cohort query that is associated with the project.
-        """
+        query=""):
         super(FLIP_VALIDATOR, self).__init__()
+
         self._validate_task_name = validate_task_name
-        self._project_id = project_id
-        self._query = query
 
         # Setup the model
         self.model = SimpleNetwork()
@@ -53,15 +54,56 @@ class FLIP_VALIDATOR(Executor):
         )
         self.model.to(self.device)
 
-        # Preparing the dataset for testing.
-        transforms = Compose(
-            [
-                ToTensor(),
-                Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
-            ]
-        )
-        self.test_data = CIFAR10(root="~/data", train=False, transform=transforms)
-        self.test_loader = DataLoader(self.test_data, batch_size=4, shuffle=False)
+        # NB val transforms differ from the train transforms. No random affine augmentation is applied and the data is
+        # not cropped into patches.
+        self.val_transforms = Compose(
+            [LoadImageD(keys=['img', 'seg'], reader='NiBabelReader', as_closest_canonical=False),
+             AddChannelD(keys=['img', 'seg']),
+             AddCoordinateChannelsD(keys=['img'], spatial_dims=(0, 1, 2)),
+             SplitChannelD(keys=['img']),
+             ScaleIntensityRangeD(keys=['img_0'], a_min=-15, a_max=100, b_min=-1, b_max=1, clip=True),
+             ConcatItemsD(keys=['img_0', 'img_1', 'img_2', 'img_3'], name='img'),
+             DeleteItemsD(keys=['img_0', 'img_1', 'img_2', 'img_3'], ),
+             CastToTypeD(keys=['img'], dtype=np.float32),
+             ToTensorD(keys=['img', 'seg'])
+             ])
+
+        
+
+        # Setup the training dataset
+        self.flip = FLIP()
+        self.project_id = project_id
+        self.query = query
+        self.dataframe = self.flip.get_dataframe(self.project_id, self.query)
+
+    def get_image_and_label_list(self, dataframe, val_split=0.1):
+            '''Returns a list of dicts, each dict containing the path to an image and its corresponding label.
+            '''
+            # split into the training and testing data
+            train_dataframe, val_dataframe =  np.split(dataframe, [int((1-val_split)*len(dataframe))])
+            image_and_label_files = []
+            # loop over each accession id in the train set
+            for accession_id in val_dataframe['accession_id']:
+                try:
+                    accession_folder_path = self.flip.get_by_accession_number(self.project_id, accession_id)
+                    # search for all .nii in the folder and check to see if they have a corresponding label
+                    all_images = accession_folder_path.rglob('*.nii*')
+                    for image in all_images:
+                        stem = str(image.stem).replace('.gz','').replace('.nii','') 
+                        # after data enrichment the segmentation will be named something like filepath_label like this
+                        #label_path = accession_folder_path / f'{stem}_label.nii'
+                        # we aren't doing data enrichment so we'll just set the label to the image here
+                        label_path = image
+                        if label_path.exists():
+                            image_and_label_files.append(
+                                {'img': str(image),
+                                'seg': str(label_path)})
+                        else:
+                            num_unpaired += 1
+                except:
+                    pass   
+            print(f'Found {len(image_and_label_files)} files in val')
+            return image_and_label_files
 
     def execute(
         self,
@@ -70,6 +112,11 @@ class FLIP_VALIDATOR(Executor):
         fl_ctx: FLContext,
         abort_signal: Signal,
     ) -> Shareable:
+        
+        test_dict = self.get_image_and_label_list(self.dataframe)
+        self._test_dataset = Dataset(test_dict, transform=self.val_transforms)
+        self.test_loader = DataLoader(self._test_dataset, batch_size=1, shuffle=False)
+
         if task_name == self._validate_task_name:
             model_owner = "?"
             try:
@@ -118,24 +165,31 @@ class FLIP_VALIDATOR(Executor):
 
     def do_validation(self, weights, abort_signal):
         self.model.load_state_dict(weights)
-
         self.model.eval()
-
-        correct = 0
-        total = 0
+        total_mean_dice = 0
+        num_images = 0
+        print(len(self.test_loader))
         with torch.no_grad():
-            for i, (images, labels) in enumerate(self.test_loader):
+            for i, batch in enumerate(self.test_loader):
                 if abort_signal.triggered:
                     return 0
 
-                images, labels = images.to(self.device), labels.to(self.device)
-                output = self.model(images)
+                images, labels = batch['img'].to(self.device), batch['seg'].to(self.device)
+                # perform sliding window inference to get a prediction for the whole volume.
+                output_logits = sliding_window_inference(images,
+                                                         sw_batch_size=2,
+                                                         roi_size=(128, 128, 128),
+                                                         predictor=self.model,
+                                                         overlap=0.25,
+                                                         do_sigmoid=False)
+                output = torch.sigmoid(output_logits)
+                metric = compute_meandice(output, labels, include_background=False).cpu().numpy()
 
-                _, pred_label = torch.max(output, 1)
+                total_mean_dice += metric.sum()
+                num_images += images.size()[0]
+                print(f'Validator Iteration: {i}, Metric: {total_mean_dice}, Num Images: {num_images}')
 
-                correct += (pred_label == labels).sum().item()
-                total += images.size()[0]
 
-            metric = correct / float(total)
+            metric = total_mean_dice/ float(num_images)
 
         return metric

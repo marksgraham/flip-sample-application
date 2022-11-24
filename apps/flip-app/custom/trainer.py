@@ -1,4 +1,4 @@
-# Copyright (c) 2021-2022, NVIDIA CORPORATION.
+# Copyright (c) 2021, NVIDIA CORPORATION.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,28 +13,35 @@
 # limitations under the License.
 
 import os.path
+from flip import FLIP
+from pathlib import Path
 
 import torch
+from torch import nn
+from torch.optim import SGD, Adam
+
+from monai.networks.nets import BasicUNet
+from monai.losses import DiceLoss
+from monai.transforms import (Compose, LoadImageD, AddChannelD, AddCoordinateChannelsD, Rand3DElasticD, SplitChannelD,
+                              DeleteItemsD, ScaleIntensityRangeD, ConcatItemsD, RandSpatialCropD, ToTensorD,
+                              CastToTypeD)
+from monai.data import Dataset, DataLoader
+
 from nvflare.apis.dxo import from_shareable, DXO, DataKind, MetaKey
 from nvflare.apis.executor import Executor
 from nvflare.apis.fl_constant import ReturnCode, ReservedKey
 from nvflare.apis.fl_context import FLContext
 from nvflare.apis.shareable import Shareable, make_reply
 from nvflare.apis.signal import Signal
-from nvflare.app_common.abstract.model import make_model_learnable, model_learnable_to_dxo
+from nvflare.app_common.abstract.model import (
+    make_model_learnable,
+    model_learnable_to_dxo,
+)
 from nvflare.app_common.app_constant import AppConstants
 from nvflare.app_common.pt.pt_fed_utils import PTModelPersistenceFormatManager
-from torch import nn
-from torch.optim import SGD
-from torch.utils.data.dataloader import DataLoader
-from torchvision.datasets import CIFAR10
-from torchvision.transforms import ToTensor, Normalize, Compose
-
-from flip import FLIP
 from pt_constants import PTConstants
 from simple_network import SimpleNetwork
-from utils.flip_constants import FlipMetricsLabel
-
+import numpy as np
 
 class FLIP_TRAINER(Executor):
     def __init__(
@@ -47,8 +54,8 @@ class FLIP_TRAINER(Executor):
         project_id="",
         query=""
     ):
-        """Cifar10 Trainer handles train and submit_model tasks. During train_task, it trains a
-        simple network on CIFAR10 dataset. For submit_model task, it sends the locally trained model
+        """This CT Haemorrhage Trainer handles train and submit_model tasks. During train_task, it trains a
+        3D Unet on paired CT images and segmentation labels. For submit_model task, it sends the locally trained model
         (if present) to the server.
 
         Args:
@@ -57,8 +64,6 @@ class FLIP_TRAINER(Executor):
             train_task_name (str, optional): Task name for train task. Defaults to "train".
             submit_model_task_name (str, optional): Task name for submit model. Defaults to "submit_model".
             exclude_vars (list): List of variables to exclude during model loading.
-            project_id (str, optional): The ID of the project the model belongs to.
-            query (str, optional): The cohort query that is associated with the project.
         """
         super(FLIP_TRAINER, self).__init__()
 
@@ -68,25 +73,35 @@ class FLIP_TRAINER(Executor):
         self._submit_model_task_name = submit_model_task_name
         self._exclude_vars = exclude_vars
 
-        # Training setup
         self.model = SimpleNetwork()
-        self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+        self.device = torch.device(
+            "cuda:0" if torch.cuda.is_available() else "cpu")
         self.model.to(self.device)
-        self.loss = nn.CrossEntropyLoss()
-        self.optimizer = SGD(self.model.parameters(), lr=lr, momentum=0.9)
+        self.loss = DiceLoss(include_background=False)
+        self.optimizer = torch.optim.Adam(self.model.parameters(), lr=0.001, weight_decay=0, amsgrad=True)
 
-        # Create Cifar10 dataset for training.
-        transforms = Compose(
-            [
-                ToTensor(),
-                Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
-            ]
-        )
-        self._train_dataset = CIFAR10(
-            root="~/data", transform=transforms, download=True, train=True
-        )
-        self._train_loader = DataLoader(self._train_dataset, batch_size=4, shuffle=True)
-        self._n_iterations = len(self._train_loader)
+        # Setup transforms using dictionary-based transforms.
+        self._train_transforms = Compose(
+            [LoadImageD(keys=['img', 'seg'], reader='NiBabelReader', as_closest_canonical=False),
+             AddChannelD(keys=['img', 'seg']),
+             AddCoordinateChannelsD(keys=['img'], spatial_dims=(0, 1, 2)),
+             Rand3DElasticD(keys=['img', 'seg'], sigma_range=(1, 3), magnitude_range=(-10, 10), prob=0.5,
+                            mode=('bilinear', 'nearest'),
+                            rotate_range=(-0.34, 0.34),
+                            scale_range=(-0.1, 0.1), spatial_size=None),
+             SplitChannelD(keys=['img']),
+             ScaleIntensityRangeD(keys=['img_0'], a_min=-15, a_max=100, b_min=-1, b_max=1, clip=True),
+             ConcatItemsD(keys=['img_0', 'img_1', 'img_2', 'img_3'], name='img'),
+             DeleteItemsD(keys=['img_0', 'img_1', 'img_2', 'img_3']),
+             RandSpatialCropD(keys=['img', 'seg'], roi_size=(128, 128, 128), random_center=True, random_size=False),
+             ToTensorD(keys=['img', 'seg'])
+             ])
+
+        # Setup the training dataset
+        self.flip = FLIP()
+        self.project_id = project_id
+        self.query = query
+        self.dataframe = self.flip.get_dataframe(self.project_id, self.query)
 
         # Setup the persistence manager to save PT model.
         # The default training configuration is used by persistence manager
@@ -98,25 +113,54 @@ class FLIP_TRAINER(Executor):
 
         self.project_id = project_id
         self.query = query
-        self.flip = FLIP()
+
+    def get_image_and_label_list(self, dataframe, val_split=0.1):
+        '''Returns a list of dicts, each dict containing the path to an image and its corresponding label.
+        '''
+        # split into the training and testing data
+        train_dataframe, val_dataframe =  np.split(dataframe, [int((1-val_split)*len(dataframe))])
+        image_and_label_files = []
+        # loop over each accession id in the train set
+        for accession_id in train_dataframe['accession_id']:
+            try:
+                accession_folder_path = self.flip.get_by_accession_number(self.project_id, accession_id)
+                # search for all .nii in the folder and check to see if they have a corresponding label
+                all_images = accession_folder_path.rglob('*.nii*')
+                for image in all_images:
+                    stem = str(image.stem).replace('.gz','').replace('.nii','')
+                    # after data enrichment the segmentation will be named something like filepath_label like this
+                    #label_path = accession_folder_path / f'{stem}_label.nii'
+                    # we aren't doing data enrichment so we'll just set the label to the image here
+                    label_path = image
+                    if label_path.exists():
+                        image_and_label_files.append(
+                            {'img': str(image),
+                            'seg': str(label_path)})
+                    else:
+                        num_unpaired += 1
+            except:
+                pass            
+        print(f'Found {len(image_and_label_files)} files in train')
+        return image_and_label_files    
 
     def local_train(self, fl_ctx, weights, abort_signal):
-        dataframe = self.flip.get_dataframe(self.project_id, self.query)
-
         # Set the model weights
         self.model.load_state_dict(state_dict=weights)
 
         # Basic training
         self.model.train()
+
+
         for epoch in range(self._epochs):
             running_loss = 0.0
+            num_images = 0
             for i, batch in enumerate(self._train_loader):
                 if abort_signal.triggered:
                     # If abort_signal is triggered, we simply return.
                     # The outside function will check it again and decide steps to take.
                     return
 
-                images, labels = batch[0].to(self.device), batch[1].to(self.device)
+                images, labels = batch['img'].to(self.device), batch['seg'].to(self.device)
                 self.optimizer.zero_grad()
 
                 predictions = self.model(images)
@@ -124,14 +168,18 @@ class FLIP_TRAINER(Executor):
                 cost.backward()
                 self.optimizer.step()
 
-                running_loss += cost.cpu().detach().numpy() / images.size()[0]
-                if i % 3000 == 0:
-                    self.log_info(
-                        fl_ctx,
-                        f"Epoch: {epoch}/{self._epochs}, Iteration: {i}, "
-                        f"Loss: {running_loss/3000}",
-                    )
-                    running_loss = 0.0
+                running_loss += cost.cpu().detach().numpy()
+                num_images += images.shape[0]
+                #print(f'Epoch: {epoch + 1}, Iteration: {i + 1}, Loss: {running_loss / num_images}')
+            average_loss = running_loss / num_images
+            self.log_info(
+                fl_ctx,
+                f"Epoch: {epoch}/{self._epochs}, Iteration: {i}, "
+                f"Loss: {average_loss}",
+            )
+
+            # print(F'TRAINING COMPLETE WITH LOSS {average_loss}')
+            # self.flip.send_metrics_value(label="LOSS_FUNCTION", value=average_loss, fl_ctx=fl_ctx)
 
     def execute(
         self,
@@ -140,11 +188,16 @@ class FLIP_TRAINER(Executor):
         fl_ctx: FLContext,
         abort_signal: Signal,
     ) -> Shareable:
+
+        train_dict = self.get_image_and_label_list(self.dataframe)
+        # NB only taking the first dict element here for quick testing - delete this line to actually train on the whole dataset:
+        #train_dict = train_dict[:1]
+        self._train_dataset = Dataset(train_dict, transform=self._train_transforms)
+        self._train_loader = DataLoader(self._train_dataset, batch_size=1, shuffle=True, num_workers=1)
+        self._n_iterations = len(self._train_loader)
+
         try:
             if task_name == self._train_task_name:
-                dataframe = self.flip.get_dataframe(self.project_id, self.query)
-                self.flip.send_metrics_value(FlipMetricsLabel.LOSS_FUNCTION, 3000.0, fl_ctx)
-
                 # Get model weights
                 try:
                     dxo = from_shareable(shareable)
