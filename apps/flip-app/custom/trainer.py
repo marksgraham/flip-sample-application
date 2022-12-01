@@ -131,7 +131,9 @@ class FLIP_TRAINER(Executor):
                     # check images are 3D
                     header = nib.load(str(image))
                     num_dim = len(header.shape)
-                    if num_dim == 3:
+                    # check is 3D and at least 128x128x128 in size
+                    print(f'HEADER SHAPE {header.shape}')
+                    if num_dim == 3 and all([dim>=128 for dim in header.shape]):
                         stem = str(image.stem).replace('.gz','').replace('.nii','')
                         # after data enrichment the segmentation will be named something like filepath_label like this
                         #label_path = accession_folder_path / f'{stem}_label.nii'
