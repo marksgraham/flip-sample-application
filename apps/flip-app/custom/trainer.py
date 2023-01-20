@@ -120,35 +120,28 @@ class FLIP_TRAINER(Executor):
         '''
         # split into the training and testing data
         train_dataframe, val_dataframe =  np.split(dataframe, [int((1-val_split)*len(dataframe))])
-        image_and_label_files = []
+        datalist = []
         # loop over each accession id in the train set
         for accession_id in train_dataframe['accession_id']:
             try:
-                accession_folder_path = self.flip.get_by_accession_number(self.project_id, accession_id)
-                # search for all .nii in the folder and check to see if they have a corresponding label
-                all_images = list(Path(accession_folder_path).rglob('*.nii*'))
+                image_data_folder_path = self.flip.get_by_accession_number(self.project_id, accession_id)
+
+                accession_folder_path = os.path.join(image_data_folder_path, accession_id)
+
+                all_images = list(Path(accession_folder_path).rglob("*.nii*"))
+
+                print(f"Total .nii count found for single accession_id: {len(all_images)}")
                 for image in all_images:
-                    # check images are 3D
                     header = nib.load(str(image))
-                    num_dim = len(header.shape)
+
                     # check is 3D and at least 128x128x128 in size
-                    print(f'HEADER SHAPE {header.shape}')
-                    if num_dim == 3 and all([dim>=128 for dim in header.shape]):
-                        stem = str(image.stem).replace('.gz','').replace('.nii','')
-                        # after data enrichment the segmentation will be named something like filepath_label like this
-                        #label_path = accession_folder_path / f'{stem}_label.nii'
-                        # we aren't doing data enrichment so we'll just set the label to the image here
-                        label_path = image
-                        if label_path.exists():
-                            image_and_label_files.append(
-                                {'img': str(image),
-                                 'seg': str(label_path)})
-                        else:
-                            num_unpaired += 1
-            except:
+                    if len(header.shape) == 3 and all([dim >= 128 for dim in header.shape]):
+                        datalist.append({"image": str(image),"seg": str(image)})
+            except Exception as e:
+                print(e)
                 pass
-        print(f'Found {len(image_and_label_files)} files in train')
-        return image_and_label_files    
+        print(f'Found {len(datalist)} files in train')
+        return datalist
 
     def local_train(self, fl_ctx, weights, abort_signal):
         # Set the model weights
