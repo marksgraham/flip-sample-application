@@ -27,11 +27,7 @@ class SimpleNetwork(nn.Module):
 
     def __init__(self, num_classes=1):
         super().__init__()
-        self.net = BasicUNet(dimensions=3,
-                             features=(32, 32, 64, 128, 256, 32),
-                             in_channels=4,
-                             out_channels=num_classes
-                             )
+        self.net = BasicUNet(dimensions=3, features=(32, 32, 64, 128, 256, 32), in_channels=4, out_channels=num_classes)
 
     def forward(self, x, do_sigmoid=True):
         logits = self.net(x)
