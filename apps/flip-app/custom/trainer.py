@@ -14,6 +14,7 @@
 
 import os.path
 from pathlib import Path
+import json
 
 import nibabel as nib
 import numpy as np
@@ -75,6 +76,11 @@ class FLIP_TRAINER(Executor):
         self._train_task_name = train_task_name
         self._submit_model_task_name = submit_model_task_name
         self._exclude_vars = exclude_vars
+
+        self.config = {}
+        working_dir = Path(__file__).parent.resolve()
+        with open(str(working_dir / "config.json")) as file:
+            self.config = json.load(file)
 
         self.model = SimpleNetwork()
         self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -193,7 +199,7 @@ class FLIP_TRAINER(Executor):
 
         # Basic training
         self.model.train()
-        for epoch in range(self._epochs):
+        for epoch in range(self.config['LOCAL_ROUNDS']):
             running_loss = 0.0
             num_images = 0
             for i, batch in enumerate(self._train_loader):
@@ -217,7 +223,7 @@ class FLIP_TRAINER(Executor):
             average_loss = running_loss / num_images
             self.log_info(
                 fl_ctx,
-                f"Epoch: {epoch}/{self._epochs}, Iteration: {i}, " f"Loss: {average_loss}",
+                f"Epoch: {epoch}/{self.config['LOCAL_ROUNDS']}, Iteration: {i}, " f"Loss: {average_loss}",
             )
 
             self.flip.send_metrics_value(label="TRAIN_LOSS", value=average_loss, fl_ctx=fl_ctx)
