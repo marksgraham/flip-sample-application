@@ -1,0 +1,92 @@
+{
+  "format_version": 2,
+  "lr": 0.01,
+  "project_id": "abcdefg123456789",
+  "query": "SELECT * FROM Table;",
+  "local_rounds": 1,
+  "executors": [
+    {
+      "tasks": [
+        "train",
+        "submit_model"
+      ],
+      "executor": {
+        "path": "trainer.FLIP_TRAINER",
+        "args": {
+          "lr": "{lr}",
+          "epochs": "{local_rounds}",
+          "project_id": "{project_id}",
+          "query": "{query}"
+        }
+      }
+    },
+    {
+      "tasks": [
+        "validate"
+      ],
+      "executor": {
+        "path": "validator.FLIP_VALIDATOR",
+        "args": {
+          "project_id": "{project_id}",
+          "query": "{query}"
+        }
+      }
+    }
+  ],
+  "task_result_filters": [
+    {
+      "tasks": [
+        "train"
+      ],
+      "filters": [
+        {
+          "path": "nvflare.app_common.filters.exclude_vars.ExcludeVars",
+          "args": {}
+        },
+        {
+          "path": "nvflare.app_common.filters.percentile_privacy.PercentilePrivacy",
+          "args": {}
+        },
+        {
+          "path": "nvflare.app_common.filters.svt_privacy.SVTPrivacy",
+          "args": {}
+        }
+      ]
+    }
+  ],
+  "task_data_filters": [
+    {
+      "tasks": [
+        "train"
+      ],
+      "filters": [
+        {
+          "path": "nvflare.app_common.filters.exclude_vars.ExcludeVars",
+          "args": {}
+        },
+        {
+          "path": "nvflare.app_common.filters.percentile_privacy.PercentilePrivacy",
+          "args": {}
+        },
+        {
+          "path": "nvflare.app_common.filters.svt_privacy.SVTPrivacy",
+          "args": {}
+        }
+      ]
+    }
+  ],
+  "components": [
+    {
+      "id": "flip_client_event_handler",
+      "path": "flip_client_event_handler.ClientEventHandler",
+      "args": {
+        "cleanup_id": "cleanup_images"
+      }
+    },
+    {
+      "id": "cleanup_images",
+      "path": "cleanup.CleanupImages",
+      "args": {}
+    }
+  ]
+}
