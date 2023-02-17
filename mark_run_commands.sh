@@ -1,4 +1,4 @@
-docker run --rm -it -v /home/mark/projects/federated_learning/flip-sample-application/data:/data --entrypoint bash nvflare-in-one
+docker run --rm -it -v /home/mark/projects/federated_learning/flip-sample-application/data:/data -v /home/mark/projects/federated_learning/flip-sample-application/apps/:/nvflare/poc/admin/transfer/ --entrypoint bash nvflare-in-one
 
 bash start_nvflare_components.sh &
 ./poc/admin/startup/fl_admin.sh

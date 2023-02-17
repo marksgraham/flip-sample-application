@@ -13,7 +13,7 @@ WORKDIR /nvflare/
 RUN yes | poc -n 2 \
   && mkdir -p poc/admin/transfer
 
-COPY ./apps/ /nvflare/poc/admin/transfer/
+#COPY ./apps/ /nvflare/poc/admin/transfer/
 COPY ./utils/test.py /nvflare/poc/admin/
 
 COPY ./utils/start_nvflare_components.sh /nvflare/
