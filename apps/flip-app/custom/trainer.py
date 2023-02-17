@@ -124,7 +124,7 @@ class FLIP_TRAINER(Executor):
         self.project_id = project_id
         self.query = query
 
-    def get_image_and_label_list(self, dataframe, val_split=0.5):
+    def get_image_and_label_list(self, dataframe, val_split=0.05):
         """Returns a list of dicts, each dict containing the path to an image and its corresponding label."""
 
         datalist = []
@@ -217,8 +217,9 @@ class FLIP_TRAINER(Executor):
                 cost.backward()
                 self.optimizer.step()
 
-                running_loss += cost.cpu().detach().numpy()
-                num_images += images.shape[0]
+                batch_size = images.shape[0]
+                num_images += batch_size
+                running_loss += cost.cpu().detach().numpy() * batch_size
                 # print(f'Epoch: {epoch + 1}, Iteration: {i + 1}, Loss: {running_loss / num_images}')
             average_loss = running_loss / num_images
             self.log_info(

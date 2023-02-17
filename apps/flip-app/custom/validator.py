@@ -217,9 +217,9 @@ class FLIP_VALIDATOR(Executor):
                 )
                 output = torch.sigmoid(output_logits)
                 metric = compute_meandice(output, labels, include_background=False).cpu().numpy()
-
-                total_mean_dice += metric.sum()
-                num_images += images.size()[0]
+                batch_size = images.shape[0]
+                total_mean_dice += metric.sum()*batch_size
+                num_images += batch_size
                 print(f"Validator Iteration: {i}, Metric: {total_mean_dice}, Num Images: {num_images}")
 
             metric = total_mean_dice / float(num_images)
