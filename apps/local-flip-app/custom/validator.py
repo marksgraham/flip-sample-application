@@ -79,7 +79,7 @@ class FLIP_VALIDATOR(Executor):
         self.query = query
         self.dataframe = self.flip.get_dataframe(self.project_id, self.query)
 
-    def get_image_and_label_list(self, dataframe, val_split=0.5):
+    def get_image_and_label_list(self, dataframe, val_split=0.05):
         """Returns a list of dicts, each dict containing the path to an image and its corresponding label."""
 
         datalist = []
@@ -97,9 +97,9 @@ class FLIP_VALIDATOR(Executor):
             accession_folder_path = image_data_folder_path
 
             all_images = list(Path(accession_folder_path).rglob("images/*.nii.gz"))
-            first_n=18
-            print(f'Limiting to {first_n} images:')
-            all_images=all_images[:first_n]
+            # first_n=18
+            # print(f'Limiting to {first_n} images:')
+            # all_images=all_images[:first_n]
             this_accession_matches = 0
             print(f"Total base CT count found for accession_id {accession_id}: {len(all_images)}")
             for img in all_images:
@@ -220,8 +220,9 @@ class FLIP_VALIDATOR(Executor):
                 output = torch.sigmoid(output_logits)
                 metric = compute_meandice(output, labels, include_background=False).cpu().numpy()
 
-                total_mean_dice += metric.sum()
-                num_images += images.size()[0]
+                batch_size = images.shape[0]
+                total_mean_dice += metric.sum()*batch_size
+                num_images += batch_size
                 print(f"Validator Iteration: {i}, Metric: {total_mean_dice}, Num Images: {num_images}")
 
             metric = total_mean_dice / float(num_images)

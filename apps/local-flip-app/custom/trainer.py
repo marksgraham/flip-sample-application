@@ -124,7 +124,7 @@ class FLIP_TRAINER(Executor):
         self.project_id = project_id
         self.query = query
 
-    def get_image_and_label_list(self, dataframe, val_split=0.5):
+    def get_image_and_label_list(self, dataframe, val_split=0.05):
         """Returns a list of dicts, each dict containing the path to an image and its corresponding label."""
 
         datalist = []
@@ -141,9 +141,9 @@ class FLIP_TRAINER(Executor):
 
             accession_folder_path = image_data_folder_path
             all_images = list(Path(accession_folder_path).rglob("images/*.nii.gz"))
-            first_n=18
-            print(f'Limiting to {first_n} images:')
-            all_images=all_images[:first_n]
+            # first_n=18
+            # print(f'Limiting to {first_n} images:')
+            # all_images=all_images[:first_n]
 
             this_accession_matches = 0
             print(f"Total base CT count found for accession_id {accession_id}: {len(all_images)}")
@@ -219,11 +219,13 @@ class FLIP_TRAINER(Executor):
                 cost = self.loss(predictions, labels)
                 cost.backward()
                 self.optimizer.step()
-
-                running_loss += cost.cpu().detach().numpy()
-                num_images += images.shape[0]
-                print(f'Epoch: {epoch + 1}, Iteration: {i + 1}, Loss: {running_loss / num_images}')
+                batch_size = images.shape[0]
+                num_images += batch_size
+                running_loss += cost.cpu().detach().numpy() * batch_size
+                print(f'Epoch: {epoch + 1}, Iteration: {i + 1}, Loss: {cost.cpu().item()}')
             average_loss = running_loss / num_images
+            print(f'Epoch: {epoch + 1}, Finished, Average loss: {average_loss}')
+
             self.log_info(
                 fl_ctx,
                 f"Epoch: {epoch}/{self.config['LOCAL_ROUNDS']}, Iteration: {i}, " f"Loss: {average_loss}",
@@ -243,7 +245,7 @@ class FLIP_TRAINER(Executor):
         # NB only taking the first dict element here for quick testing - delete this line to actually train on the whole dataset:
         # train_dict = train_dict[:1]
         self._train_dataset = Dataset(train_dict, transform=self._train_transforms)
-        self._train_loader = DataLoader(self._train_dataset, batch_size=1, shuffle=True, num_workers=1)
+        self._train_loader = DataLoader(self._train_dataset, batch_size=3, shuffle=True, num_workers=1)
         self._n_iterations = len(self._train_loader)
 
         if task_name == self._train_task_name:

@@ -1,4 +1,4 @@
 {
-    "GLOBAL_ROUNDS": 2,
-    "LOCAL_ROUNDS": 2
+    "GLOBAL_ROUNDS": 20,
+    "LOCAL_ROUNDS": 30
 }
