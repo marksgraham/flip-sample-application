@@ -124,7 +124,7 @@ class FLIP_TRAINER(Executor):
         self.project_id = project_id
         self.query = query
 
-    def get_image_and_label_list(self, dataframe, val_split=0.05):
+    def get_image_and_label_list(self, dataframe, val_split=0.1):
         """Returns a list of dicts, each dict containing the path to an image and its corresponding label."""
 
         datalist = []
