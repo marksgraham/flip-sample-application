@@ -124,7 +124,7 @@ class FLIP_TRAINER(Executor):
         self.project_id = project_id
         self.query = query
 
-        train_dict = self.get_image_and_label_list(self.dataframe)
+        train_dict = self.get_image_and_label_list(self.dataframe, val_split=self.config["VAL_SPLIT"])
         self._train_dataset = Dataset(train_dict, transform=self._train_transforms)
         self._train_loader = DataLoader(self._train_dataset, batch_size=1, shuffle=True, num_workers=1)
         self._n_iterations = len(self._train_loader)

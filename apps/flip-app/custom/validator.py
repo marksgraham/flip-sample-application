@@ -79,7 +79,7 @@ class FLIP_VALIDATOR(Executor):
         self.query = query
         self.dataframe = self.flip.get_dataframe(self.project_id, self.query)
 
-        test_dict = self.get_image_and_label_list(self.dataframe)
+        test_dict = self.get_image_and_label_list(self.dataframe, val_split=self.config["VAL_SPLIT"])
         self._test_dataset = Dataset(test_dict, transform=self.val_transforms)
         self.test_loader = DataLoader(self._test_dataset, batch_size=1, shuffle=False)
 
