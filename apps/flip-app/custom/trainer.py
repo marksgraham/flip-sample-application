@@ -124,7 +124,12 @@ class FLIP_TRAINER(Executor):
         self.project_id = project_id
         self.query = query
 
-    def get_image_and_label_list(self, dataframe, val_split=0.1):
+        train_dict = self.get_image_and_label_list(self.dataframe)
+        self._train_dataset = Dataset(train_dict, transform=self._train_transforms)
+        self._train_loader = DataLoader(self._train_dataset, batch_size=1, shuffle=True, num_workers=1)
+        self._n_iterations = len(self._train_loader)
+
+    def get_image_and_label_list(self, dataframe, val_split=0.15):
         """Returns a list of dicts, each dict containing the path to an image and its corresponding label."""
 
         datalist = []
@@ -141,12 +146,12 @@ class FLIP_TRAINER(Executor):
 
             accession_folder_path = os.path.join(image_data_folder_path, accession_id)
 
-            all_images = list(Path(accession_folder_path).rglob("sub-*_desc-rigid_ct.nii"))
+            all_images = list(Path(accession_folder_path).rglob("sub-*_desc-affine_ct.nii"))
 
             this_accession_matches = 0
             print(f"Total base CT count found for accession_id {accession_id}: {len(all_images)}")
             for img in all_images:
-                seg = str(img).replace('_ct', '_label-lesion_mask').replace('.nii', '.nii.gz')
+                seg = str(img).replace("_ct", "_label-lesion_mask").replace(".nii", ".nii.gz")
 
                 if not Path(seg).exists():
                     print(f"No matching lesion mask for {img}.")
@@ -179,7 +184,8 @@ class FLIP_TRAINER(Executor):
                     continue
                 elif any([img_dim != seg_dim for img_dim, seg_dim in zip(img_header.shape, seg_header.shape)]):
                     print(
-                        f"Image dimensions ({img_header.shape}) do not match segmentation dimensions ({seg_header.shape}).")
+                        f"Image dimensions ({img_header.shape}) do not match segmentation dimensions ({seg_header.shape})."
+                    )
                     continue
                 else:
                     datalist.append({"img": str(img), "seg": seg})
@@ -199,7 +205,7 @@ class FLIP_TRAINER(Executor):
 
         # Basic training
         self.model.train()
-        for epoch in range(self.config['LOCAL_ROUNDS']):
+        for epoch in range(self.config["LOCAL_ROUNDS"]):
             running_loss = 0.0
             num_images = 0
             for i, batch in enumerate(self._train_loader):
@@ -236,13 +242,6 @@ class FLIP_TRAINER(Executor):
         fl_ctx: FLContext,
         abort_signal: Signal,
     ) -> Shareable:
-
-        train_dict = self.get_image_and_label_list(self.dataframe)
-        # NB only taking the first dict element here for quick testing - delete this line to actually train on the whole dataset:
-        # train_dict = train_dict[:1]
-        self._train_dataset = Dataset(train_dict, transform=self._train_transforms)
-        self._train_loader = DataLoader(self._train_dataset, batch_size=1, shuffle=True, num_workers=1)
-        self._n_iterations = len(self._train_loader)
 
         if task_name == self._train_task_name:
             # Get model weights

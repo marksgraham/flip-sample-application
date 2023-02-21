@@ -79,7 +79,11 @@ class FLIP_VALIDATOR(Executor):
         self.query = query
         self.dataframe = self.flip.get_dataframe(self.project_id, self.query)
 
-    def get_image_and_label_list(self, dataframe, val_split=0.1):
+        test_dict = self.get_image_and_label_list(self.dataframe)
+        self._test_dataset = Dataset(test_dict, transform=self.val_transforms)
+        self.test_loader = DataLoader(self._test_dataset, batch_size=1, shuffle=False)
+
+    def get_image_and_label_list(self, dataframe, val_split=0.15):
         """Returns a list of dicts, each dict containing the path to an image and its corresponding label."""
 
         datalist = []
@@ -96,12 +100,12 @@ class FLIP_VALIDATOR(Executor):
 
             accession_folder_path = os.path.join(image_data_folder_path, accession_id)
 
-            all_images = list(Path(accession_folder_path).rglob("sub-*_desc-rigid_ct.nii"))
+            all_images = list(Path(accession_folder_path).rglob("sub-*_desc-affine_ct.nii"))
 
             this_accession_matches = 0
             print(f"Total base CT count found for accession_id {accession_id}: {len(all_images)}")
             for img in all_images:
-                seg = str(img).replace('_ct', '_label-lesion_mask').replace('.nii', '.nii.gz')
+                seg = str(img).replace("_ct", "_label-lesion_mask").replace(".nii", ".nii.gz")
 
                 if not Path(seg).exists():
                     print(f"No matching lesion mask for {img}.")
@@ -134,7 +138,8 @@ class FLIP_VALIDATOR(Executor):
                     continue
                 elif any([img_dim != seg_dim for img_dim, seg_dim in zip(img_header.shape, seg_header.shape)]):
                     print(
-                        f"Image dimensions ({img_header.shape}) do not match segmentation dimensions ({seg_header.shape}).")
+                        f"Image dimensions ({img_header.shape}) do not match segmentation dimensions ({seg_header.shape})."
+                    )
                     continue
                 else:
                     datalist.append({"img": str(img), "seg": seg})
@@ -155,10 +160,6 @@ class FLIP_VALIDATOR(Executor):
         fl_ctx: FLContext,
         abort_signal: Signal,
     ) -> Shareable:
-
-        test_dict = self.get_image_and_label_list(self.dataframe)
-        self._test_dataset = Dataset(test_dict, transform=self.val_transforms)
-        self.test_loader = DataLoader(self._test_dataset, batch_size=1, shuffle=False)
 
         if task_name == self._validate_task_name:
             model_owner = "?"
@@ -218,7 +219,7 @@ class FLIP_VALIDATOR(Executor):
                 output = torch.sigmoid(output_logits)
                 metric = compute_meandice(output, labels, include_background=False).cpu().numpy()
                 batch_size = images.shape[0]
-                total_mean_dice += metric.sum()*batch_size
+                total_mean_dice += metric.sum() * batch_size
                 num_images += batch_size
                 print(f"Validator Iteration: {i}, Metric: {total_mean_dice}, Num Images: {num_images}")
 
