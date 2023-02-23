@@ -50,6 +50,11 @@ class FLIP_VALIDATOR(Executor):
 
         self._validate_task_name = validate_task_name
 
+        self.config = {}
+        working_dir = Path(__file__).parent.resolve()
+        with open(str(working_dir / "config.json")) as file:
+            self.config = json.load(file)
+
         # Setup the model
         self.model = SimpleNetwork()
         self.device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")

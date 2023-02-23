@@ -1,5 +1,5 @@
 {
-    "GLOBAL_ROUNDS": 200,
+    "GLOBAL_ROUNDS": 20,
     "LOCAL_ROUNDS": 2,
-    "VAL_SPLIT": 0.1,
+    "VAL_SPLIT": 0.1
 }
